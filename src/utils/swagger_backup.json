@@ -1,0 +1,3140 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "School-ERP APIs",
+    "version": "1.0.0"
+  },
+  "paths":{
+    
+"/admin/register": {
+  "post": {
+    "summary": "Create a super admin user",
+    "tags": ["SuperAdmin"],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "multipart/form-data": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "example": "admin@example.com"
+              },
+              "fullName": {
+                "type": "string",
+                "example": "John Doe"
+              },
+              "mobileNumber": {
+                "type": "string",
+                "example": "+919876543210"
+              },
+              "password": {
+                "type": "string",
+                "example": "securePassword123"
+              },
+              "role": {
+                "type": "string",
+                "example": "super-admin"
+              },
+              "rolePermission": {
+                "type": "string",
+                "example": "all"
+              },
+              "status": {
+                "type": "boolean",
+                "example": "true"
+              },
+              "notes": {
+                "type": "string",
+                "example": "This is the main super admin."
+              },
+              "adminImage": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "required": [
+              "email",
+              "fullName",
+              "mobileNumber",
+              "password",
+              "role",
+              "rolePermission",
+              "status",
+              "notes"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Super admin created successfully",
+        "content": {
+          "application/json": {
+            "example": {
+              "statusCode": 201,
+              "data": {
+                "user": {
+                  "email": "admin@example.com",
+                  "role": "super-admin"
+                },
+                "admin": {
+                  "email": "admin@example.com",
+                  "fullName": "John Doe",
+                  "mobileNumber": "+919876543210",
+                  "role": "super-admin",
+                  "rolePermission": "all",
+                  "status": "active",
+                  "notes": "This is the main super admin.",
+                  "adminImage": "http://localhost:5000/uploads/admin/profile.jpg"
+                }
+              },
+              "message": "Admin created successfully"
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Missing required fields"
+      },
+      "500": {
+        "description": "Server error during admin creation"
+      }
+    }
+  }
+},
+
+"/admin/login": {
+  "post": {
+    "summary": "Login as a super admin",
+    "tags": ["SuperAdmin"],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "example": "admin@example.com"
+              },
+              "password": {
+                "type": "string",
+                "example": "securePassword123"
+              },
+              "role":{
+                "type":"string",
+                "example":"super-admin,technical-admin..."
+              }
+            },
+            "required": ["email", "password"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "User logged in successfully",
+        "content": {
+          "application/json": {
+            "example": {
+              "statusCode": 200,
+              "data": {
+                "user": {"email": "admin@example.com"},
+                "accessToken": "jwt_access_token",
+                "refreshToken": "jwt_refresh_token"
+              },
+              "message": "User logged in successfully"
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Invalid credentials or admin not found"
+      }
+    }
+  }
+},
+
+"/admin/filter": {
+  "get": {
+    "summary": "Filter and search SuperAdmins",
+    "tags": ["SuperAdmin"],
+    "parameters": [
+      {
+        "name": "search",
+        "in": "query",
+        "required": true,
+        "description": "Search by fullName (minimum 3 characters required)",
+        "schema": {
+          "type": "string",
+          "example": "John"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "Filter by status: 'active' or 'inactive'",
+        "schema": {
+          "type": "string",
+          "enum": ["active", "inactive"]
+        }
+      },
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "Page number for pagination",
+        "schema": {
+          "type": "integer",
+          "default": 1,
+          "example": 1
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Number of records per page",
+        "schema": {
+          "type": "integer",
+          "default": 10,
+          "example": 10
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Filtered SuperAdmins fetched successfully",
+        "content": {
+          "application/json": {
+            "example": {
+              "statusCode": 200,
+              "data": {
+                "stats": {
+                  "totalUsers": 50,
+                  "activeUsers": 30,
+                  "inactiveUsers": 20
+                },
+                "pagination": {
+                  "totalRecords": 5,
+                  "currentPage": 1,
+                  "totalPages": 1
+                },
+                "data": [
+                  {
+                    "id": "c8e5a7c0-6f27-4e94-8a10-80fd5dc4b4e2",
+                    "fullName": "John Doe",
+                    "email": "john@example.com",
+                    "mobileNumber": "9876543210",
+                    "role": "super-admin",
+                    "rolePermission": "all",
+                    "status": true,
+                    "notes": "Main Super Admin",
+                    "adminImage": "http://localhost:5000/uploads/admin/john.jpg",
+                    "createdAt": "2025-08-13T10:20:30.000Z",
+                    "updatedAt": "2025-08-13T10:20:30.000Z"
+                  }
+                ]
+              },
+              "message": "Filtered SuperAdmins fetched successfully"
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Bad request or invalid search parameter"
+      }
+    }
+  }
+},
+
+"/admin/delete/{id}": {
+  "delete": {
+    "summary": "Delete a SuperAdmin",
+    "tags": ["SuperAdmin"],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "UUID of the SuperAdmin to delete",
+        "schema": {
+          "type": "string",
+          "example": "c8e5a7c0-6f27-4e94-8a10-80fd5dc4b4e2"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "SuperAdmin deleted successfully",
+        "content": {
+          "application/json": {
+            "example": {
+              "statusCode": 200,
+              "data": {},
+              "message": "SuperAdmin deleted successfully"
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "SuperAdmin not found"
+      },
+      "500": {
+        "description": "Server error during deletion"
+      }
+    }
+  }
+},
+
+"/admin/schools": {
+  "get": {
+    "summary": "Get all schools with associated plans",
+    "tags": ["SuperAdmin"],
+    "responses": {
+      "200": {
+        "description": "Schools retrieved successfully",
+        "content": {
+          "application/json": {
+            "example": {
+              "message": "Schools retrieved successfully",
+              "data": [
+                {
+                  "id": 1,
+                  "name": "School A",
+                  "plans": [
+                    {"planId": 101, "name": "Basic"},
+                    {"planId": 102, "name": "Premium"}
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+},
+
+"/admin/current-user": {
+  "get": {
+    "summary": "Get currently logged-in user",
+    "tags": ["SuperAdmin"],
+    "responses": {
+      "200": {
+        "description": "User fetched successfully",
+        "content": {
+          "application/json": {
+            "example": {
+              "statusCode": 200,
+              "data": {
+                "id": "user123",
+                "email": "user@example.com",
+                "role": "super-admin"
+              },
+              "message": "User fetched successfully"
+            }
+          }
+        }
+      }
+    }
+  }
+},
+
+"/admin/logout": {
+    "patch": {
+      "summary": "Logout user",
+      "tags": ["SuperAdmin"],
+      "description": "Clears authentication tokens or sessions.",
+      "responses": {
+        "200": {
+          "description": "User logged out successfully"
+        }
+      }
+    }
+},
+
+"/admin/refresh": {
+    "post": {
+      "summary": "Refresh access token",
+      "tags": ["SuperAdmin"],
+      "description": "Generates a new access token using a valid refresh token.",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "refreshToken": { "type": "string" }
+              },
+              "required": ["refreshToken"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "New access token issued"
+        },
+        "403": {
+          "description": "Invalid or expired refresh token"
+        }
+      }
+    }
+},
+
+"/admin/password/request-token": {
+    "post": {
+      "summary": "Request password reset",
+      "tags": ["SuperAdmin"],
+      "description": "Sends a password reset link/token to the user's email.",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string", "format": "email" }
+              },
+              "required": ["email"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Password reset instructions sent"
+        },
+        "404": {
+          "description": "Email not found"
+        }
+      }
+    }
+},
+
+"/admin/reset-password/{token}": {
+    "post": {
+      "summary": "Reset password",
+      "tags": ["SuperAdmin"],
+      "description": "Allows user to reset password using a valid token.",
+      "parameters": [
+        {
+          "name": "token",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Reset token sent to the user's email"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "newPassword": { "type": "string", "format": "password" }
+              },
+              "required": ["newPassword"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Password successfully reset"
+        },
+        "400": {
+          "description": "Invalid or expired token"
+        }
+      }
+    }
+},
+
+"/admin/modules": {
+    "get": {
+      "tags": ["SuperAdmin"],
+      "summary": "Get all modules",
+      "description": "Fetch all modules available for SuperAdmin",
+      "operationId": "getAllModules",
+      "responses": {
+        "200": {
+          "description": "Modules fetched successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statusCode": {
+                    "type": "integer",
+                    "example": 200
+                  },
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Module"
+                    }
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "Modules fetched successfully"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Modules not found"
+        }
+      }
+    }
+},
+
+
+
+"/module": {
+    "get": {
+      "tags": ["Module"],
+      "summary": "Get all modules",
+      "description": "Fetch all modules",
+      "responses": {
+        "200": {
+          "description": "Modules fetched successfully"
+        },
+        "404": {
+          "description": "Modules not found"
+        }
+      }
+    },
+    "post": {
+      "tags": ["Module"],
+      "summary": "Create a module",
+      "description": "Creates a new module",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "price": { "type": "number" },
+                "description": { "type": "string" }
+              },
+              "required": ["name", "description"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Module created successfully"
+        },
+        "400": {
+          "description": "Module already exists"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+},
+
+"/module/{id}": {
+    "patch": {
+      "tags": ["Module"],
+      "summary": "Update a module",
+      "description": "Updates the details of an existing module",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "ID of the module to update"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "price": { "type": "number" },
+                "description": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Module updated successfully"
+        },
+        "400": {
+          "description": "Module already exists"
+        },
+        "404": {
+          "description": "Module not found"
+        }
+      }
+    },
+    "delete": {
+      "tags": ["Module"],
+      "summary": "Delete a module",
+      "description": "Deletes a module by ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "ID of the module to delete"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Module deleted successfully"
+        },
+        "404": {
+          "description": "Module not found"
+        }
+      }
+    }
+},
+
+
+"/plan": {
+    "post": {
+      "tags": ["Plan"],
+      "summary": "Create a plan",
+      "description": "Creates a new plan with associated modules",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "code": { "type": "string" },
+                "category": { "type": "string" },
+                "status": { "type": "string" },
+                "description": { "type": "string" },
+                "actualPrice": { "type": "number" },
+                "offerPrice": { "type": "number" },
+                "billingCycle": { "type": "string" },
+                "gst": { "type": "number" },
+                "maxStudent": { "type": "number" },
+                "maxStaffUser": { "type": "number" },
+                "storageLimit": { "type": "number" },
+                "minStudentLimit": { "type": "number" },
+                "maxStudentLimit": { "type": "number" },
+                "perStudentPrice": { "type": "number" },
+                "creditCarryForward": { "type": "boolean" },
+                "emailNotification": { "type": "boolean" },
+                "smsAlerts": { "type": "boolean" },
+                "whatsappAlerts": { "type": "boolean" },
+                "customeLogoBranding": { "type": "boolean" },
+                "icon": { "type": "string", "format": "binary" },
+                "iconColor": { "type": "string" },
+                "planPros": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "planCons": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "duration": { "type": "integer" },
+                "termsAndPolicy": { "type": "string" },
+                "adminNotes": { "type": "string" },
+                "modules": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              },
+              "required": [
+                "name",
+                "code",
+                "category",
+                "status",
+                "actualPrice",
+                "billingCycle",
+                "duration"
+              ]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": { "description": "Plan created successfully" },
+        "400": { "description": "Plan with same name or code already exists or invalid module IDs" },
+        "500": { "description": "Server error" }
+      }
+    },
+    "get": {
+      "tags": ["Plan"],
+      "summary": "Get all plans",
+      "description": "Fetch all plans with their modules",
+      "responses": {
+        "200": { "description": "Plans fetched successfully" },
+        "500": { "description": "Server error" }
+      }
+    }
+},
+
+"/plan/{id}": {
+    "get": {
+      "tags": ["Plan"],
+      "summary": "Get a plan by ID",
+      "description": "Fetch a single plan with its modules by ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "ID of the plan to fetch"
+        }
+      ],
+      "responses": {
+        "200": { "description": "Plan fetched successfully" },
+        "404": { "description": "Plan not found" },
+        "500": { "description": "Server error" }
+      }
+    },
+    "patch": {
+      "tags": ["Plan"],
+      "summary": "Update a plan",
+      "description": "Updates a plan's details and associated modules",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "ID of the plan to update"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "code": { "type": "string" },
+                "category": { "type": "string" },
+                "status": { "type": "string" },
+                "description": { "type": "string" },
+                "price": { "type": "number" },
+                "billingCycle": { "type": "string" },
+                "gst": { "type": "number" },
+                "maxStudent": { "type": "number" },
+                "maxStaffUser": { "type": "number" },
+                "storageLimit": { "type": "number" },
+                "minStudentLimit": { "type": "number" },
+                "maxStudentLimit": { "type": "number" },
+                "perStudentPrice": { "type": "number" },
+                "creditCarryForward": { "type": "boolean" },
+                "emailNotification": { "type": "boolean" },
+                "smsAlerts": { "type": "boolean" },
+                "whatsappAlerts": { "type": "boolean" },
+                "customeLogoBranding": { "type": "boolean" },
+                "icon": { "type": "string", "format": "binary" },
+                "iconColor": { "type": "string" },
+                "planPros": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "planCons": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "duration": { "type": "integer" },
+                "termsAndPolicy": { "type": "string" },
+                "adminNotes": { "type": "string" },
+                "modules": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": { "description": "Plan updated successfully" },
+        "400": { "description": "Another plan with same name/code exists or invalid module IDs" },
+        "404": { "description": "Plan not found" },
+        "500": { "description": "Server error" }
+      }
+    },
+    "delete": {
+      "tags": ["Plan"],
+      "summary": "Delete a plan",
+      "description": "Deletes a plan by ID and its module associations",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "ID of the plan to delete"
+        }
+      ],
+      "responses": {
+        "200": { "description": "Plan deleted successfully" },
+        "404": { "description": "Plan not found" },
+        "500": { "description": "Server error" }
+      }
+    }
+},
+
+
+"/school/admin/login": {
+    "post": {
+      "tags": ["School"],
+      "summary": "Login as School Admin",
+      "description": "Authenticate school admin using email and password",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["email", "password"],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "admin@school.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "securepassword123"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "School admin logged in successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statusCode": {
+                    "type": "integer",
+                    "example": 200
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "user": {
+                        "$ref": "#/components/schemas/User"
+                      },
+                      "accessToken": {
+                        "type": "string",
+                        "example": "access.token.value"
+                      },
+                      "refreshToken": {
+                        "type": "string",
+                        "example": "refresh.token.value"
+                      }
+                    }
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "School admin logged in successfully"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Email and password are required"
+        },
+        "401": {
+          "description": "Invalid credentials"
+        },
+        "404": {
+          "description": "Admin's email or role not found"
+        }
+      }
+    }
+},
+
+"/school": {
+    "post": {
+      "tags": ["School"],
+      "summary": "Create a new school",
+      "description": "Creates a new school along with a school admin and user. Also creates a dedicated database schema for the school.",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "slug", "institutionName", "institutionType", "board", "establishmentYear",
+                "medium", "totalStudent", "contactPersonName", "contactNumber", "alternateNumber",
+                "addressLine1", "addressLine2", "email", "city", "state", "pincode", "country",
+                "plan", "smsSenderId", "whatsappNumber", "adminName", "adminEmail",
+                "adminMobileNumber", "notes", "password"
+              ],
+              "properties": {
+                "slug": { 
+                  "type": "string",
+                  "example": "greenwood_high_school",
+                  "description": "Unique identifier for the school (used for database schema)"
+                },
+                "institutionName": { 
+                  "type": "string",
+                  "example": "Greenwood High School"
+                },
+                "institutionType": { 
+                  "type": "string",
+                  "example": "School"
+                },
+                "board": { 
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["CBSE", "ICSE", "State-Board", "IB"]
+                  },
+                  "example": ["CBSE", "ICSE"]
+                },
+                "establishmentYear": { 
+                  "type": "integer",
+                  "example": 1995
+                },
+                "medium": { 
+                  "type": "string",
+                  "example": "English"
+                },
+                "totalStudent": { 
+                  "type": "integer",
+                  "example": 1200
+                },
+                "contactPersonName": { 
+                  "type": "string",
+                  "example": "Dr. Rajesh Kumar"
+                },
+                "contactNumber": { 
+                  "type": "integer",
+                  "example": 9876543210
+                },
+                "alternateNumber": { 
+                  "type": "integer",
+                  "example": 9876543211
+                },
+                "addressLine1": { 
+                  "type": "string",
+                  "example": "123 Education Street"
+                },
+                "addressLine2": { 
+                  "type": "string",
+                  "example": "Near City Center"
+                },
+                "email": { 
+                  "type": "string",
+                  "example": "info@greenwoodhigh.edu"
+                },
+                "city": { 
+                  "type": "string",
+                  "example": "Mumbai"
+                },
+                "state": { 
+                  "type": "string",
+                  "example": "Maharashtra"
+                },
+                "pincode": { 
+                  "type": "integer",
+                  "example": 400001
+                },
+                "country": { 
+                  "type": "string",
+                  "example": "India"
+                },
+                "plan": { 
+                  "type": "string",
+                  "example": "d08c3590-7024-418c-9da5-57169b32a59e",
+                  "description": "Plan ID from the plans table"
+                },
+                "smsSenderId": { 
+                  "type": "string",
+                  "example": "GRWDHI"
+                },
+                "whatsappNumber": { 
+                  "type": "integer",
+                  "example": 9876543210
+                },
+                "adminName": { 
+                  "type": "string",
+                  "example": "Priya Sharma"
+                },
+                "adminEmail": { 
+                  "type": "string",
+                  "example": "admin@greenwoodhigh.edu"
+                },
+                "adminMobileNumber": { 
+                  "type": "integer",
+                  "example": 9876543212
+                },
+                "notes": { 
+                  "type": "string",
+                  "example": "Premier educational institution with modern facilities"
+                },
+                "password": { 
+                  "type": "string",
+                  "example": "SecurePassword123!"
+                },
+                "schoolImage": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "School logo or image file"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "School created successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "message": "School created successfully",
+                "data": {
+                  "school": {
+                    "id": 1,
+                    "slug": "greenwood_high_school",
+                    "institutionName": "Greenwood High School",
+                    "institutionType": "Private School",
+                    "board": "CBSE",
+                    "establishmentYear": "1995",
+                    "medium": "English",
+                    "totalStudent": 1200,
+                    "contactPersonName": "Dr. Rajesh Kumar",
+                    "contactNumber": "+919876543210",
+                    "alternateNumber": "+919876543211",
+                    "addressLine1": "123 Education Street",
+                    "addressLine2": "Near City Center",
+                    "email": "info@greenwoodhigh.edu",
+                    "city": "Mumbai",
+                    "state": "Maharashtra",
+                    "pincode": "400001",
+                    "country": "India",
+                    "plan": "1",
+                    "smsSenderId": "GRWDHI",
+                    "whatsappNumber": "+919876543210",
+                    "schoolImage": "http://localhost:5000/uploads/school/school_image.jpg",
+                    "adminName": "Priya Sharma",
+                    "adminEmail": "admin@greenwoodhigh.edu",
+                    "adminMobileNumber": "+919876543212",
+                    "notes": "Premier educational institution with modern facilities",
+                    "createdAt": "2025-09-09T06:25:04.000Z",
+                    "updatedAt": "2025-09-09T06:25:04.000Z"
+                  },
+                  "schoolAdmin": {
+                    "id": 1,
+                    "email": "admin@greenwoodhigh.edu",
+                    "user_id": 1,
+                    "school_id": 1,
+                    "createdAt": "2025-09-09T06:25:04.000Z",
+                    "updatedAt": "2025-09-09T06:25:04.000Z"
+                  },
+                  "user": {
+                    "id": 1,
+                    "email": "admin@greenwoodhigh.edu",
+                    "role": "school-admin",
+                    "schemaName": "greenwood_high_school",
+                    "createdAt": "2025-09-09T06:25:04.000Z",
+                    "updatedAt": "2025-09-09T06:25:04.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Missing required fields, invalid plan, or duplicate slug/email",
+          "content": {
+            "application/json": {
+              "examples": {
+                "missingFields": {
+                  "summary": "Missing required fields",
+                  "value": {
+                    "statusCode": 400,
+                    "message": "Missing required fields: slug, institutionName, plan",
+                    "success": false
+                  }
+                },
+                "duplicateSlug": {
+                  "summary": "Duplicate slug",
+                  "value": {
+                    "statusCode": 400,
+                    "message": "School with this slug already exists",
+                    "success": false
+                  }
+                },
+                "duplicateEmail": {
+                  "summary": "Duplicate admin email",
+                  "value": {
+                    "statusCode": 400,
+                    "message": "User with this email already exists",
+                    "success": false
+                  }
+                },
+                "invalidPlan": {
+                  "summary": "Invalid plan ID",
+                  "value": {
+                    "statusCode": 400,
+                    "message": "Invalid plan selected",
+                    "success": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error during school creation",
+          "content": {
+            "application/json": {
+              "example": {
+                "statusCode": 500,
+                "message": "School creation failed",
+                "success": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "get": {
+      "tags": ["School"],
+      "summary": "Get all schools",
+      "description": "Fetches all schools with their associated plans",
+      "responses": {
+        "200": {
+          "description": "Schools retrieved successfully",
+          "content": {
+            "application/json": {
+              "example": {
+                "message": "Schools retrieved successfully",
+                "data": [
+                  {
+                    "id": 1,
+                    "slug": "greenwood_high_school",
+                    "institutionName": "Greenwood High School",
+                    "institutionType": "Private School",
+                    "board": "CBSE",
+                    "establishmentYear": "1995",
+                    "medium": "English",
+                    "totalStudent": 1200,
+                    "contactPersonName": "Dr. Rajesh Kumar",
+                    "contactNumber": "+919876543210",
+                    "alternateNumber": "+919876543211",
+                    "addressLine1": "123 Education Street",
+                    "addressLine2": "Near City Center",
+                    "email": "info@greenwoodhigh.edu",
+                    "city": "Mumbai",
+                    "state": "Maharashtra",
+                    "pincode": "400001",
+                    "country": "India",
+                    "plan": "1",
+                    "smsSenderId": "GRWDHI",
+                    "whatsappNumber": "+919876543210",
+                    "schoolImage": "http://localhost:5000/uploads/school/school_image.jpg",
+                    "adminName": "Priya Sharma",
+                    "adminEmail": "admin@greenwoodhigh.edu",
+                    "adminMobileNumber": "+919876543212",
+                    "notes": "Premier educational institution with modern facilities",
+                    "createdAt": "2025-09-09T06:25:04.000Z",
+                    "updatedAt": "2025-09-09T06:25:04.000Z",
+                    "plans": {
+                      "id": 1,
+                      "name": "Premium Plan",
+                      "code": "PREM001",
+                      "category": "Educational",
+                      "status": "active",
+                      "actualPrice": 50000,
+                      "offerPrice": 45000,
+                      "billingCycle": "yearly",
+                      "duration": 12
+                    }
+                  },
+                  {
+                    "id": 2,
+                    "slug": "sunrise_academy",
+                    "institutionName": "Sunrise Academy",
+                    "institutionType": "Public School",
+                    "board": "ICSE",
+                    "establishmentYear": "2001",
+                    "medium": "English",
+                    "totalStudent": 800,
+                    "contactPersonName": "Mrs. Anita Singh",
+                    "contactNumber": "+919876543220",
+                    "alternateNumber": "+919876543221",
+                    "addressLine1": "456 Learning Avenue",
+                    "addressLine2": "Education District",
+                    "email": "contact@sunriseacademy.edu",
+                    "city": "Delhi",
+                    "state": "Delhi",
+                    "pincode": "110001",
+                    "country": "India",
+                    "plan": "2",
+                    "smsSenderId": "SUNRIS",
+                    "whatsappNumber": "+919876543220",
+                    "schoolImage": "http://localhost:5000/uploads/school/sunrise_logo.jpg",
+                    "adminName": "Rohit Verma",
+                    "adminEmail": "admin@sunriseacademy.edu",
+                    "adminMobileNumber": "+919876543222",
+                    "notes": "Modern academy with focus on holistic development",
+                    "createdAt": "2025-09-08T10:15:30.000Z",
+                    "updatedAt": "2025-09-08T10:15:30.000Z",
+                    "plans": {
+                      "id": 2,
+                      "name": "Standard Plan",
+                      "code": "STD001",
+                      "category": "Educational",
+                      "status": "active",
+                      "actualPrice": 30000,
+                      "offerPrice": 27000,
+                      "billingCycle": "yearly",
+                      "duration": 12
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error",
+          "content": {
+            "application/json": {
+              "example": {
+                "statusCode": 500,
+                "message": "Internal server error while fetching schools",
+                "success": false
+              }
+            }
+          }
+        }
+      }
+    }
+},
+
+"/school/image/{id}":{
+        "patch": {
+      "tags": ["School"],
+      "summary": "Update school image",
+      "description": "Updates the image of a school",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "schoolImage": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "School image updated successfully"
+        },
+        "400": {
+          "description": "School image is required"
+        },
+        "404": {
+          "description": "School not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+},
+
+"/school/{id}": {
+      "put": {
+        "tags": ["School"],
+        "summary": "Update school",
+        "description": "Update details of a specific school",
+        "operationId": "updateSchool",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ID of the school"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "institutionName": { "type": "string" },
+                  "institutionType": { "type": "string" },
+                  "board": { "type": "string" },
+                  "establishmentYear": { "type": "integer" },
+                  "medium": { "type": "string" },
+                  "totalStudent": { "type": "integer" },
+                  "contactPersonName": { "type": "string" },
+                  "contactNumber": { "type": "string" },
+                  "alternateNumber": { "type": "string" },
+                  "addressLine1": { "type": "string" },
+                  "addressLine2": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" },
+                  "pincode": { "type": "string" },
+                  "country": { "type": "string" },
+                  "plan": { "type": "string" },
+                  "smsSenderId": { "type": "string" },
+                  "whatsappNumber": { "type": "string" },
+                  "adminName": { "type": "string" },
+                  "adminEmail": { "type": "string", "format": "email" },
+                  "adminMobileNumber": { "type": "string" },
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "School updated successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "School not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["School"],
+        "summary": "Delete school",
+        "description": "Deletes a school and related admin/schema",
+        "operationId": "deleteSchool",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ID of the school to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "School and its related data deleted successfully"
+          },
+          "404": {
+            "description": "School not found"
+          },
+          "500": {
+            "description": "Error during deletion"
+          }
+        }
+      },
+      "get": {
+      "tags": ["School"],
+      "summary": "Get a single school by ID",
+      "description": "Retrieves a school by its ID including its plan",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "School retrieved successfully"
+        },
+        "400": {
+          "description": "School ID is required"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+
+  "/settings/staff/overview": {
+    "get": {
+      "tags": ["Staff Settings"],
+      "summary": "Get staff settings overview",
+      "description": "Get overview of all staff settings including counts and recent changes",
+      "responses": {
+        "200": {
+          "description": "Settings overview fetched successfully"
+        }
+      }
+    }
+  },
+
+  "/settings/staff/departments": {
+    "post": {
+      "tags": ["Staff Settings"],
+      "summary": "Create a new department",
+      "description": "Create a new department for staff organization",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Mathematics"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Mathematics Department"
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                }
+              },
+              "required": ["name"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Department created successfully"
+        },
+        "400": {
+          "description": "Department with this name already exists"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Staff Settings"],
+      "summary": "Get all departments",
+      "description": "Fetch all departments with optional deleted items",
+      "responses": {
+        "200": {
+          "description": "Departments fetched successfully"
+        }
+      }
+    }
+  },
+
+  "/settings/staff/departments/{id}": {
+    "get": {
+      "tags": ["Staff Settings"],
+      "summary": "Get department by ID",
+      "description": "Fetch a specific department by its ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Department ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Department fetched successfully"
+        },
+        "404": {
+          "description": "Department not found"
+        }
+      }
+    },
+    "patch": {
+      "tags": ["Staff Settings"],
+      "summary": "Update department",
+      "description": "Update department details",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Department ID"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Updated Mathematics"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Updated Mathematics Department"
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Department updated successfully"
+        },
+        "404": {
+          "description": "Department not found"
+        }
+      }
+    },
+    "delete": {
+      "tags": ["Staff Settings"],
+      "summary": "Delete department",
+      "description": "Soft delete a department",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Department ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Department deleted successfully"
+        },
+        "404": {
+          "description": "Department not found"
+        }
+      }
+    }
+  },
+
+  "/settings/staff/departments/{id}/restore": {
+    "patch": {
+      "tags": ["Staff Settings"],
+      "summary": "Restore deleted department",
+      "description": "Restore a soft deleted department",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Department ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Department restored successfully"
+        },
+        "404": {
+          "description": "Deleted department not found"
+        }
+      }
+    }
+  },
+
+  "/settings/staff/leave-types": {
+    "post": {
+      "tags": ["Staff Settings"],
+      "summary": "Create a new leave type",
+      "description": "Create a new leave type for staff leave management",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Medical Leave"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Medical and health related leave"
+                },
+                "max_days": {
+                  "type": "integer",
+                  "example": 30
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                }
+              },
+              "required": ["name", "max_days"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Leave type created successfully"
+        },
+        "400": {
+          "description": "Leave type with this name already exists"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Staff Settings"],
+      "summary": "Get all leave types",
+      "description": "Fetch all leave types with optional deleted items",
+      "responses": {
+        "200": {
+          "description": "Leave types fetched successfully"
+        }
+      }
+    }
+  },
+
+  "/settings/staff/leave-types/{id}": {
+    "get": {
+      "tags": ["Staff Settings"],
+      "summary": "Get leave type by ID",
+      "description": "Fetch a specific leave type by its ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Leave Type ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Leave type fetched successfully"
+        },
+        "404": {
+          "description": "Leave type not found"
+        }
+      }
+    },
+    "patch": {
+      "tags": ["Staff Settings"],
+      "summary": "Update leave type",
+      "description": "Update leave type details",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Leave Type ID"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Updated Medical Leave"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Updated medical and health related leave"
+                },
+                "max_days": {
+                  "type": "integer",
+                  "example": 35
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Leave type updated successfully"
+        },
+        "404": {
+          "description": "Leave type not found"
+        }
+      }
+    },
+    "delete": {
+      "tags": ["Staff Settings"],
+      "summary": "Delete leave type",
+      "description": "Soft delete a leave type",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Leave Type ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Leave type deleted successfully"
+        },
+        "404": {
+          "description": "Leave type not found"
+        }
+      }
+    }
+  },
+
+  "/settings/staff/leave-types/{id}/restore": {
+    "patch": {
+      "tags": ["Staff Settings"],
+      "summary": "Restore deleted leave type",
+      "description": "Restore a soft deleted leave type",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Leave Type ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Leave type restored successfully"
+        },
+        "404": {
+          "description": "Deleted leave type not found"
+        }
+      }
+    }
+  },
+
+  "/settings/staff/leave-policies": {
+    "post": {
+      "tags": ["Staff Settings"],
+      "summary": "Create a new leave policy",
+      "description": "Create a new leave policy with auto approve functionality",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Standard Medical Policy"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Standard medical leave policy"
+                },
+                "leave_type_id": {
+                  "type": "string",
+                  "example": "uuid"
+                },
+                "department_id": {
+                  "type": "string",
+                  "example": "uuid"
+                },
+                "max_days_per_year": {
+                  "type": "integer",
+                  "example": 15
+                },
+                "auto_approve": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "approval_required": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                }
+              },
+              "required": ["name", "leave_type_id", "max_days_per_year"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Leave policy created successfully"
+        },
+        "400": {
+          "description": "Leave policy with this name already exists or invalid references"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Staff Settings"],
+      "summary": "Get all leave policies",
+      "description": "Fetch all leave policies with related data",
+      "responses": {
+        "200": {
+          "description": "Leave policies fetched successfully"
+        }
+      }
+    }
+  },
+
+  "/settings/staff/leave-policies/{id}": {
+    "get": {
+      "tags": ["Staff Settings"],
+      "summary": "Get leave policy by ID",
+      "description": "Fetch a specific leave policy by its ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Leave Policy ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Leave policy fetched successfully"
+        },
+        "404": {
+          "description": "Leave policy not found"
+        }
+      }
+    },
+    "patch": {
+      "tags": ["Staff Settings"],
+      "summary": "Update leave policy",
+      "description": "Update leave policy details",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Leave Policy ID"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Updated Standard Medical Policy"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Updated standard medical leave policy"
+                },
+                "leave_type_id": {
+                  "type": "string",
+                  "example": "uuid"
+                },
+                "department_id": {
+                  "type": "string",
+                  "example": "uuid"
+                },
+                "max_days_per_year": {
+                  "type": "integer",
+                  "example": 20
+                },
+                "auto_approve": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "approval_required": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Leave policy updated successfully"
+        },
+        "404": {
+          "description": "Leave policy not found"
+        }
+      }
+    },
+    "delete": {
+      "tags": ["Staff Settings"],
+      "summary": "Delete leave policy",
+      "description": "Soft delete a leave policy",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Leave Policy ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Leave policy deleted successfully"
+        },
+        "404": {
+          "description": "Leave policy not found"
+        }
+      }
+    }
+  },
+
+  "/settings/staff/leave-policies/{id}/restore": {
+    "patch": {
+      "tags": ["Staff Settings"],
+      "summary": "Restore deleted leave policy",
+      "description": "Restore a soft deleted leave policy",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Leave Policy ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Leave policy restored successfully"
+        },
+        "404": {
+          "description": "Deleted leave policy not found"
+        }
+      }
+    }
+  },
+
+  "/settings/academic-year": {
+    "post": {
+      "tags": ["Academic Year Settings"],
+      "summary": "Create a new academic year",
+      "description": "Creates a new academic year. If is_active is set to true, all other academic years will be deactivated.",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "academic_year_label": {
+                  "type": "string",
+                  "example": "2024-2025"
+                },
+                "start_date": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2024-04-01"
+                },
+                "end_date": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2025-03-31"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Academic year 2024-2025"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": false
+                }
+              },
+              "required": ["academic_year_label", "start_date", "end_date"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Academic year created successfully"
+        },
+        "400": {
+          "description": "Bad request - validation error"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Academic Year Settings"],
+      "summary": "Get all academic years",
+      "description": "Retrieves all academic years with optional filtering",
+      "parameters": [
+        {
+          "name": "include_deleted",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "is_active",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Academic years fetched successfully"
+        }
+      }
+    }
+  },
+
+  "/settings/academic-year/active": {
+    "get": {
+      "tags": ["Academic Year Settings"],
+      "summary": "Get active academic year",
+      "description": "Retrieves the currently active academic year",
+      "responses": {
+        "200": {
+          "description": "Active academic year fetched successfully"
+        },
+        "404": {
+          "description": "No active academic year found"
+        }
+      }
+    }
+  },
+
+  "/settings/academic-year/{id}": {
+    "get": {
+      "tags": ["Academic Year Settings"],
+      "summary": "Get academic year by ID",
+      "description": "Retrieves a specific academic year by its ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Academic year fetched successfully"
+        },
+        "404": {
+          "description": "Academic year not found"
+        }
+      }
+    },
+    "put": {
+      "tags": ["Academic Year Settings"],
+      "summary": "Update academic year",
+      "description": "Updates an existing academic year",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "academic_year_label": {
+                  "type": "string",
+                  "example": "2024-2025 Updated"
+                },
+                "start_date": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2024-04-01"
+                },
+                "end_date": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2025-03-31"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Updated academic year description"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Academic year updated successfully"
+        },
+        "400": {
+          "description": "Bad request - validation error"
+        },
+        "404": {
+          "description": "Academic year not found"
+        }
+      }
+    },
+    "delete": {
+      "tags": ["Academic Year Settings"],
+      "summary": "Delete academic year",
+      "description": "Soft deletes an academic year",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Academic year deleted successfully"
+        },
+        "400": {
+          "description": "Cannot delete active academic year"
+        },
+        "404": {
+          "description": "Academic year not found"
+        }
+      }
+    }
+  },
+
+  "/settings/academic-year/{id}/restore": {
+    "put": {
+      "tags": ["Academic Year Settings"],
+      "summary": "Restore academic year",
+      "description": "Restores a soft-deleted academic year",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Academic year restored successfully"
+        },
+        "404": {
+          "description": "Deleted academic year not found"
+        }
+      }
+    }
+  },
+
+  "/settings/academic-year/{id}/activate": {
+    "put": {
+      "tags": ["Academic Year Settings"],
+      "summary": "Activate academic year",
+      "description": "Activates a specific academic year and deactivates all others",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Academic year activated successfully"
+        },
+        "404": {
+          "description": "Academic year not found"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/classes": {
+    "post": {
+      "tags": ["Section Master"],
+      "summary": "Create class master",
+      "description": "Creates a new class master entry",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["class_name"],
+              "properties": {
+                "class_name": {
+                  "type": "string",
+                  "example": "1st"
+                },
+                "class_code": {
+                  "type": "string",
+                  "example": "C1"
+                },
+                "display_order": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "description": {
+                  "type": "string",
+                  "example": "First grade class"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Class master created successfully"
+        },
+        "400": {
+          "description": "Class name is required or class already exists"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Section Master"],
+      "summary": "Get all class masters",
+      "description": "Retrieves all class master entries",
+      "parameters": [
+        {
+          "name": "include_deleted",
+          "in": "query",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "is_active",
+          "in": "query",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Class masters fetched successfully"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/classes/{id}": {
+    "get": {
+      "tags": ["Section Master"],
+      "summary": "Get class master by ID",
+      "description": "Retrieves a specific class master by ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Class master fetched successfully"
+        },
+        "404": {
+          "description": "Class master not found"
+        }
+      }
+    },
+    "put": {
+      "tags": ["Section Master"],
+      "summary": "Update class master",
+      "description": "Updates an existing class master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "class_name": {
+                  "type": "string",
+                  "example": "1st"
+                },
+                "class_code": {
+                  "type": "string",
+                  "example": "C1"
+                },
+                "display_order": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "description": {
+                  "type": "string",
+                  "example": "First grade class"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Class master updated successfully"
+        },
+        "400": {
+          "description": "Class with this name or code already exists"
+        },
+        "404": {
+          "description": "Class master not found"
+        }
+      }
+    },
+    "delete": {
+      "tags": ["Section Master"],
+      "summary": "Delete class master",
+      "description": "Soft deletes a class master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Class master deleted successfully"
+        },
+        "404": {
+          "description": "Class master not found"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/classes/{id}/restore": {
+    "put": {
+      "tags": ["Section Master"],
+      "summary": "Restore class master",
+      "description": "Restores a soft-deleted class master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Class master restored successfully"
+        },
+        "404": {
+          "description": "Deleted class master not found"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/sections": {
+    "post": {
+      "tags": ["Section Master"],
+      "summary": "Create section master",
+      "description": "Creates a new section master entry",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["section_name"],
+              "properties": {
+                "section_name": {
+                  "type": "string",
+                  "example": "A"
+                },
+                "section_code": {
+                  "type": "string",
+                  "example": "SEC-A"
+                },
+                "display_order": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Section A"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Section master created successfully"
+        },
+        "400": {
+          "description": "Section name is required or section already exists"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Section Master"],
+      "summary": "Get all section masters",
+      "description": "Retrieves all section master entries",
+      "parameters": [
+        {
+          "name": "include_deleted",
+          "in": "query",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "is_active",
+          "in": "query",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Section masters fetched successfully"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/sections/{id}": {
+    "get": {
+      "tags": ["Section Master"],
+      "summary": "Get section master by ID",
+      "description": "Retrieves a specific section master by ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Section master fetched successfully"
+        },
+        "404": {
+          "description": "Section master not found"
+        }
+      }
+    },
+    "put": {
+      "tags": ["Section Master"],
+      "summary": "Update section master",
+      "description": "Updates an existing section master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "section_name": {
+                  "type": "string",
+                  "example": "A"
+                },
+                "section_code": {
+                  "type": "string",
+                  "example": "SEC-A"
+                },
+                "display_order": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Section A"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Section master updated successfully"
+        },
+        "400": {
+          "description": "Section with this name or code already exists"
+        },
+        "404": {
+          "description": "Section master not found"
+        }
+      }
+    },
+    "delete": {
+      "tags": ["Section Master"],
+      "summary": "Delete section master",
+      "description": "Soft deletes a section master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Section master deleted successfully"
+        },
+        "404": {
+          "description": "Section master not found"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/sections/{id}/restore": {
+    "put": {
+      "tags": ["Section Master"],
+      "summary": "Restore section master",
+      "description": "Restores a soft-deleted section master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Section master restored successfully"
+        },
+        "404": {
+          "description": "Deleted section master not found"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/subjects": {
+    "post": {
+      "tags": ["Section Master"],
+      "summary": "Create subject master",
+      "description": "Creates a new subject master entry",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["subject_name"],
+              "properties": {
+                "subject_name": {
+                  "type": "string",
+                  "example": "Mathematics"
+                },
+                "subject_code": {
+                  "type": "string",
+                  "example": "MATH"
+                },
+                "subject_type": {
+                  "type": "string",
+                  "enum": ["academic", "co-curricular", "extra-curricular", "sports", "other"],
+                  "example": "academic"
+                },
+                "display_order": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Mathematics subject"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Subject master created successfully"
+        },
+        "400": {
+          "description": "Subject name is required or subject already exists"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Section Master"],
+      "summary": "Get all subject masters",
+      "description": "Retrieves all subject master entries",
+      "parameters": [
+        {
+          "name": "include_deleted",
+          "in": "query",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "is_active",
+          "in": "query",
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "subject_type",
+          "in": "query",
+          "schema": {
+            "type": "string",
+            "enum": ["academic", "co-curricular", "extra-curricular", "sports", "other"]
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Subject masters fetched successfully"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/subjects/{id}": {
+    "get": {
+      "tags": ["Section Master"],
+      "summary": "Get subject master by ID",
+      "description": "Retrieves a specific subject master by ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Subject master fetched successfully"
+        },
+        "404": {
+          "description": "Subject master not found"
+        }
+      }
+    },
+    "put": {
+      "tags": ["Section Master"],
+      "summary": "Update subject master",
+      "description": "Updates an existing subject master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "subject_name": {
+                  "type": "string",
+                  "example": "Mathematics"
+                },
+                "subject_code": {
+                  "type": "string",
+                  "example": "MATH"
+                },
+                "subject_type": {
+                  "type": "string",
+                  "enum": ["academic", "co-curricular", "extra-curricular", "sports", "other"],
+                  "example": "academic"
+                },
+                "display_order": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Mathematics subject"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Subject master updated successfully"
+        },
+        "400": {
+          "description": "Subject with this name or code already exists"
+        },
+        "404": {
+          "description": "Subject master not found"
+        }
+      }
+    },
+    "delete": {
+      "tags": ["Section Master"],
+      "summary": "Delete subject master",
+      "description": "Soft deletes a subject master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Subject master deleted successfully"
+        },
+        "404": {
+          "description": "Subject master not found"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/subjects/{id}/restore": {
+    "put": {
+      "tags": ["Section Master"],
+      "summary": "Restore subject master",
+      "description": "Restores a soft-deleted subject master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Subject master restored successfully"
+        },
+        "404": {
+          "description": "Deleted subject master not found"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/houses": {
+    "post": {
+      "tags": ["Section Master"],
+      "summary": "Create house master",
+      "description": "Creates a new house master entry",
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["house_name"],
+              "properties": {
+                "house_name": {
+                  "type": "string",
+                  "example": "Red House"
+                },
+                "house_code": {
+                  "type": "string",
+                  "example": "RED"
+                },
+                "house_color": {
+                  "type": "string",
+                  "example": "#FF0000"
+                },
+                "display_order": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Red house for sports activities"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "House master created successfully"
+        },
+        "400": {
+          "description": "House name is required or house already exists"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Section Master"],
+      "summary": "Get all house masters",
+      "description": "Retrieves all house master entries",
+      "parameters": [
+        {
+          "name": "include_deleted",
+          "in": "query",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        {
+          "name": "is_active",
+          "in": "query",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "House masters fetched successfully"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/houses/{id}": {
+    "get": {
+      "tags": ["Section Master"],
+      "summary": "Get house master by ID",
+      "description": "Retrieves a specific house master by ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "House master fetched successfully"
+        },
+        "404": {
+          "description": "House master not found"
+        }
+      }
+    },
+    "put": {
+      "tags": ["Section Master"],
+      "summary": "Update house master",
+      "description": "Updates an existing house master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "house_name": {
+                  "type": "string",
+                  "example": "Red House"
+                },
+                "house_code": {
+                  "type": "string",
+                  "example": "RED"
+                },
+                "house_color": {
+                  "type": "string",
+                  "example": "#FF0000"
+                },
+                "display_order": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Red house for sports activities"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "House master updated successfully"
+        },
+        "400": {
+          "description": "House with this name or code already exists"
+        },
+        "404": {
+          "description": "House master not found"
+        }
+      }
+    },
+    "delete": {
+      "tags": ["Section Master"],
+      "summary": "Delete house master",
+      "description": "Soft deletes a house master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "House master deleted successfully"
+        },
+        "404": {
+          "description": "House master not found"
+        }
+      }
+    }
+  },
+
+  "/settings/masterdata/houses/{id}/restore": {
+    "put": {
+      "tags": ["Section Master"],
+      "summary": "Restore house master",
+      "description": "Restores a soft-deleted house master",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "House master restored successfully"
+        },
+        "404": {
+          "description": "Deleted house master not found"
+        }
+      }
+    }
+  }
+  }
+}
+
+
+
+
+
+
+
+
+

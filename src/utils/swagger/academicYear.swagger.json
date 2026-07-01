@@ -1,0 +1,975 @@
+{
+  "paths": {
+    "/academic-year": {
+   "post": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Create a new academic year",
+        "description": "Creates a new academic year with status tracking. If is_active is set to true, all other academic years will be deactivated.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "academic_year_label": {
+                    "type": "string",
+                    "pattern": "^[0-9]{4}(-[0-9]{4})?$",
+                    "example": "2025",
+                    "description": "Academic year label in format 'YYYY' or 'YYYY-YYYY'"
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2025-04-01"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2026-03-31"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Academic year 2025"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["draft", "configured", "active"],
+                    "default": "draft",
+                    "example": "draft",
+                    "description": "Status of the academic year. Fixed values: draft, configured, active"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": false,
+                    "description": "Whether to activate this academic year immediately"
+                  }
+                },
+                "required": ["academic_year_label", "start_date", "end_date"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Academic year created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic year created successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AcademicYear"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missingFields": {
+                    "summary": "Missing required fields",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Academic year label is required",
+                      "success": false
+                    }
+                  },
+                  "invalidLabelFormat": {
+                    "summary": "Invalid label format",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Academic year label must be in format 'YYYY' or 'YYYY-YYYY' (e.g., '2025' or '2024-2025')",
+                      "success": false
+                    }
+                  },
+                  "duplicateLabel": {
+                    "summary": "Duplicate academic year label",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Academic year '2025' already exists",
+                      "success": false
+                    }
+                  },
+                  "invalidDateRange": {
+                    "summary": "Invalid date range",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "End date must be after start date",
+                      "success": false
+                    }
+                  },
+                  "invalidStatus": {
+                    "summary": "Invalid status value",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Status must be one of: draft, configured, active",
+                      "success": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Get all academic years",
+        "description": "Retrieves all academic years with optional filtering and pagination",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "description": "Page number for pagination"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Number of items per page"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["draft", "configured", "active"]
+            },
+            "description": "Filter by status"
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filter by active status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic years retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "academicYears": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AcademicYear" }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/PaginationInfo"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/cleanup/manual": {
+      "post": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Trigger manual cleanup of expired academic years",
+        "description": "Manually triggers cleanup of academic years that have been deleted more than 90 days ago",
+        "responses": {
+          "200": {
+            "description": "Manual cleanup completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": { "type": "null" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error during cleanup",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/active": {
+      "get": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Get active academic year",
+        "description": "Retrieves the currently active academic year",
+        "responses": {
+          "200": {
+            "description": "Active academic year retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAcademicYear"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No active academic year found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{id}": {
+      "get": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Get academic year by ID",
+        "description": "Retrieves a specific academic year by its ID with configuration progress",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic year retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "allOf": [
+                        { "$ref": "#/components/schemas/AcademicYear" },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "configuration_progress": {
+                              "$ref": "#/components/schemas/ConfigurationProgress"
+                            },
+                            "is_ready_for_activation": {
+                              "type": "boolean",
+                              "description": "Whether all required configurations are complete"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid academic year ID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Update academic year",
+        "description": "Updates an existing academic year",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "academic_year_label": {
+                    "type": "string",
+                    "pattern": "^[0-9]{4}(-[0-9]{4})?$",
+                    "example": "2025"
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2025-04-01"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2026-03-31"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Updated academic year description"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["draft", "configured", "active"],
+                    "example": "configured"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Academic year updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAcademicYear"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Delete academic year",
+        "description": "Soft deletes an academic year and all its configurations (classes, sections, subjects, fee structure). Cannot delete active academic year.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic year and all configurations deleted successfully",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "successWithConfigurations": {
+                    "summary": "Academic year deleted with configurations",
+                    "value": {
+                      "success": true,
+                      "message": "Academic year deleted successfully along with 1 class(es), 3 section(s), 3 subject(s), 1 fee structure(s)",
+                      "data": null
+                    }
+                  },
+                  "successWithoutConfigurations": {
+                    "summary": "Academic year deleted without configurations",
+                    "value": {
+                      "success": true,
+                      "message": "Academic year deleted successfully",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot delete academic year",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "activeAcademicYear": {
+                    "summary": "Cannot delete active academic year",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Cannot delete active academic year. Please activate another academic year first.",
+                      "success": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{id}/progress": {
+      "get": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Get academic year configuration progress",
+        "description": "Get the configuration progress and status of an academic year",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Configuration progress retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "academic_year": { "$ref": "#/components/schemas/AcademicYear" },
+                        "configuration_progress": {
+                          "$ref": "#/components/schemas/ConfigurationProgress"
+                        },
+                        "is_ready_for_activation": {
+                          "type": "boolean",
+                          "description": "Whether all required configurations are complete"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": ["draft", "configured", "active"],
+                          "description": "Current status of the academic year"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid academic year ID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{id}/restore": {
+      "put": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Restore academic year",
+        "description": "Restores a soft-deleted academic year and all its configurations (classes, sections, subjects, fee structure) within 90 days of deletion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic year and all configurations restored successfully",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "successWithConfigurations": {
+                    "summary": "Academic year restored with configurations",
+                    "value": {
+                      "success": true,
+                      "message": "Academic year restored successfully along with 1 class(es), 3 section(s), 3 subject(s), 1 fee structure(s)",
+                      "data": null
+                    }
+                  },
+                  "successWithoutConfigurations": {
+                    "summary": "Academic year restored without configurations",
+                    "value": {
+                      "success": true,
+                      "message": "Academic year restored successfully",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot restore academic year",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 400,
+                  "message": "Cannot restore academic year. 90 days have passed since deletion.",
+                  "success": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Deleted academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{id}/permanent-delete": {
+      "delete": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Permanently delete academic year",
+        "description": "Permanently deletes an academic year and all its configurations (classes, sections, subjects, fee structure) from the database. This action cannot be undone.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic year permanently deleted successfully",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "successWithConfigurations": {
+                    "summary": "Academic year deleted with configurations",
+                    "value": {
+                      "success": true,
+                      "message": "Academic year permanently deleted successfully along with 1 class(es), 3 section(s), 3 subject(s), 1 fee structure(s)",
+                      "data": null
+                    }
+                  },
+                  "successWithoutConfigurations": {
+                    "summary": "Academic year deleted without configurations",
+                    "value": {
+                      "success": true,
+                      "message": "Academic year permanently deleted successfully",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot permanently delete academic year",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "activeAcademicYear": {
+                    "summary": "Cannot delete active academic year",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Cannot permanently delete active academic year. Please activate another academic year first.",
+                      "success": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{id}/activate": {
+      "put": {
+        "tags": ["Academic Year Settings"],
+        "summary": "Activate academic year",
+        "description": "Activates a specific academic year and deactivates all others. Requires complete configuration.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic year activated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAcademicYear"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot activate academic year",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "alreadyActive": {
+                    "summary": "Academic year is already active",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Academic year is already active",
+                      "success": false
+                    }
+                  },
+                  "incompleteConfiguration": {
+                    "summary": "Incomplete configuration",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Cannot activate academic year. Missing configuration: classes, sections, subjects",
+                      "success": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Academic Year Settings",
+      "description": "Academic year management and configuration with status tracking"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "AcademicYear": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the academic year"
+          },
+          "academic_year_label": {
+            "type": "string",
+            "description": "Label for the academic year (e.g., 2025)"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Start date of the academic year"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "description": "End date of the academic year"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the academic year"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "configured", "active"],
+            "description": "Current status of the academic year"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether this academic year is currently active"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the user who created this record"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the user who last updated this record"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          },
+          "deleted_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Soft delete timestamp (if deleted)"
+          },
+          "is_deleted": {
+            "type": "boolean",
+            "description": "Whether the record is soft deleted"
+          }
+        }
+      },
+      "ConfigurationProgress": {
+        "type": "object",
+        "properties": {
+          "classes": {
+            "type": "boolean",
+            "description": "Whether classes are configured"
+          },
+          "sections": {
+            "type": "boolean",
+            "description": "Whether sections are configured"
+          },
+          "subjects": {
+            "type": "boolean",
+            "description": "Whether subjects are configured"
+          },
+          "fee_structure": {
+            "type": "boolean",
+            "description": "Whether fee structure is configured"
+          },
+          "total_steps": {
+            "type": "integer",
+            "description": "Total number of configuration steps"
+          },
+          "completed_steps": {
+            "type": "integer",
+            "description": "Number of completed configuration steps"
+          }
+        }
+      },
+      "PaginationInfo": {
+        "type": "object",
+        "properties": {
+          "currentPage": {
+            "type": "integer",
+            "description": "Current page number"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Total number of pages"
+          },
+          "totalItems": {
+            "type": "integer",
+            "description": "Total number of items"
+          },
+          "itemsPerPage": {
+            "type": "integer",
+            "description": "Number of items per page"
+          },
+          "hasNext": {
+            "type": "boolean",
+            "description": "Whether there is a next page"
+          },
+          "hasPrev": {
+            "type": "boolean",
+            "description": "Whether there is a previous page"
+          }
+        }
+      },
+      "ApiResponseAcademicYear": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the request was successful"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AcademicYear"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Whether the request was successful"
+          }
+        }
+      }
+    }
+  }
+}

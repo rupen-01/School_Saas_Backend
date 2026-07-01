@@ -1,0 +1,48 @@
+{
+  "name": "school_saas_project",
+  "version": "1.0.0",
+  "description": "A School ERP ",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cross-env NODE_ENV=local node index.js",
+    "start:local": "cross-env NODE_ENV=local nodemon index.js",
+    "start:staging": "cross-env NODE_ENV=local nodemon index.js",
+    "start:production": "cross-env NODE_ENV=local nodemon index.js",
+    "start:migrate": "cross-env NODE_ENV=local node scripts/migrateAllSchemas.js"
+  },
+  "keywords": [
+    "Backend"
+  ],
+  "author": "Hariom Patel",
+  "license": "ISC",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "nodemon": "^3.1.10"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.11.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "fs": "^0.0.1-security",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
+    "node-fetch": "^2.7.0",
+    "path": "^0.12.7",
+    "pg": "^8.16.3",
+    "redis": "^5.6.0",
+    "sequelize": "^6.37.7",
+    "sequelize-cli": "^6.6.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.1.0"
+  }
+}

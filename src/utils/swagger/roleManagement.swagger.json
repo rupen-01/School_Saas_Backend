@@ -1,0 +1,724 @@
+{
+  "/settings/roles": {
+    "post": {
+      "tags": ["Role Management"],
+      "summary": "Create a new role",
+      "description": "Create a new role with specified name, code, and description",
+      "security": [{ "bearerAuth": [] }],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["role_name", "role_code"],
+              "properties": {
+                "role_name": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 100,
+                  "example": "Class Teacher"
+                },
+                "role_code": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 50,
+                  "pattern": "^[A-Z_]+$",
+                  "example": "CLASS_TEACHER"
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 500,
+                  "example": "Teacher responsible for managing a specific class"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Role created successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statusCode": { "type": "integer", "example": 201 },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string", "format": "uuid" },
+                      "role_name": { "type": "string", "example": "Class Teacher" },
+                      "role_code": { "type": "string", "example": "CLASS_TEACHER" },
+                      "description": { "type": "string" },
+                      "is_system_role": { "type": "boolean", "example": false },
+                      "is_active": { "type": "boolean", "example": true },
+                      "created_by": { "type": "string", "format": "uuid" },
+                      "updated_by": { "type": "string", "format": "uuid" },
+                      "createdAt": { "type": "string", "format": "date-time" },
+                      "updatedAt": { "type": "string", "format": "date-time" }
+                    }
+                  },
+                  "message": { "type": "string", "example": "Role created successfully" },
+                  "success": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Invalid input or role already exists"
+        },
+        "401": {
+          "description": "Unauthorized - Invalid or missing token"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    },
+    "get": {
+      "tags": ["Role Management"],
+      "summary": "Get all roles with pagination",
+      "description": "Retrieve all roles with optional filters and pagination",
+      "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        {
+          "name": "page",
+          "in": "query",
+          "schema": { "type": "integer", "default": 1 },
+          "description": "Page number"
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "schema": { "type": "integer", "default": 10 },
+          "description": "Items per page"
+        },
+        {
+          "name": "is_active",
+          "in": "query",
+          "schema": { "type": "string", "enum": ["true", "false"] },
+          "description": "Filter by active status"
+        },
+        {
+          "name": "is_system_role",
+          "in": "query",
+          "schema": { "type": "string", "enum": ["true", "false"] },
+          "description": "Filter by system role"
+        },
+        {
+          "name": "search",
+          "in": "query",
+          "schema": { "type": "string" },
+          "description": "Search by role name or code"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Roles retrieved successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statusCode": { "type": "integer", "example": 200 },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "roles": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": { "type": "string", "format": "uuid" },
+                            "role_name": { "type": "string" },
+                            "role_code": { "type": "string" },
+                            "description": { "type": "string" },
+                            "is_system_role": { "type": "boolean" },
+                            "is_active": { "type": "boolean" },
+                            "createdAt": { "type": "string", "format": "date-time" },
+                            "updatedAt": { "type": "string", "format": "date-time" }
+                          }
+                        }
+                      },
+                      "pagination": {
+                        "type": "object",
+                        "properties": {
+                          "currentPage": { "type": "integer" },
+                          "totalPages": { "type": "integer" },
+                          "totalItems": { "type": "integer" },
+                          "itemsPerPage": { "type": "integer" },
+                          "hasNext": { "type": "boolean" },
+                          "hasPrev": { "type": "boolean" }
+                        }
+                      }
+                    }
+                  },
+                  "message": { "type": "string", "example": "Roles retrieved successfully" },
+                  "success": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/settings/roles/{id}": {
+    "get": {
+      "tags": ["Role Management"],
+      "summary": "Get role by ID with permissions",
+      "description": "Retrieve a specific role with all its permissions",
+      "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string", "format": "uuid" },
+          "description": "Role ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Role retrieved successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statusCode": { "type": "integer", "example": 200 },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string", "format": "uuid" },
+                      "role_name": { "type": "string" },
+                      "role_code": { "type": "string" },
+                      "description": { "type": "string" },
+                      "is_system_role": { "type": "boolean" },
+                      "is_active": { "type": "boolean" },
+                      "permissions": {
+                        "type": "array",
+                        "description": "Hierarchical permissions grouped by module",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "module_id": { "type": "string", "format": "uuid" },
+                            "module_name": { "type": "string" },
+                            "module_icon": { "type": "string", "nullable": true },
+                            "module_permissions": {
+                              "type": "object",
+                              "nullable": true,
+                              "properties": {
+                                "can_view": { "type": "boolean" },
+                                "can_create": { "type": "boolean" },
+                                "can_update": { "type": "boolean" },
+                                "can_delete": { "type": "boolean" },
+                                "can_export": { "type": "boolean" },
+                                "can_approve": { "type": "boolean" }
+                              }
+                            },
+                            "sub_modules": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "sub_module_id": { "type": "string", "format": "uuid" },
+                                  "sub_module_name": { "type": "string" },
+                                  "permissions": {
+                                    "type": "object",
+                                    "properties": {
+                                      "can_view": { "type": "boolean" },
+                                      "can_create": { "type": "boolean" },
+                                      "can_update": { "type": "boolean" },
+                                      "can_delete": { "type": "boolean" },
+                                      "can_export": { "type": "boolean" },
+                                      "can_approve": { "type": "boolean" }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "message": { "type": "string", "example": "Role retrieved successfully" },
+                  "success": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Role not found"
+        }
+      }
+    },
+    "put": {
+      "tags": ["Role Management"],
+      "summary": "Update role details",
+      "description": "Update role name, description, or active status",
+      "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string", "format": "uuid" },
+          "description": "Role ID"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "role_name": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 100
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                "is_active": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Role updated successfully"
+        },
+        "400": {
+          "description": "Bad request - Cannot modify system role"
+        },
+        "404": {
+          "description": "Role not found"
+        }
+      }
+    },
+    "delete": {
+      "tags": ["Role Management"],
+      "summary": "Soft delete role",
+      "description": "Soft delete a role (can be restored within 90 days)",
+      "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string", "format": "uuid" },
+          "description": "Role ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Role deleted successfully"
+        },
+        "400": {
+          "description": "Cannot delete system role or role with assigned staff"
+        },
+        "404": {
+          "description": "Role not found"
+        }
+      }
+    }
+  },
+  "/settings/roles/{roleId}/permissions": {
+    "put": {
+      "tags": ["Role Management"],
+      "summary": "Assign/Update permissions to role",
+      "description": "Assign or update module and sub-module permissions for a role",
+      "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        {
+          "name": "roleId",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string", "format": "uuid" },
+          "description": "Role ID"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["permissions"],
+              "properties": {
+                "permissions": {
+                  "type": "array",
+                  "description": "Hierarchical permissions structure grouped by module",
+                  "items": {
+                    "type": "object",
+                    "required": ["module_id", "module_permissions"],
+                    "properties": {
+                      "module_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Module ID from common schema"
+                      },
+                      "module_permissions": {
+                        "type": "object",
+                        "required": ["can_view", "can_create", "can_update", "can_delete", "can_export", "can_approve"],
+                        "properties": {
+                          "can_view": { "type": "boolean" },
+                          "can_create": { "type": "boolean" },
+                          "can_update": { "type": "boolean" },
+                          "can_delete": { "type": "boolean" },
+                          "can_export": { "type": "boolean" },
+                          "can_approve": { "type": "boolean" }
+                        }
+                      },
+                      "sub_module_permissions": {
+                        "type": "array",
+                        "description": "Array of sub-module permissions (optional)",
+                        "items": {
+                          "type": "object",
+                          "required": ["sub_module_id", "permissions"],
+                          "properties": {
+                            "sub_module_id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "permissions": {
+                              "type": "object",
+                              "required": ["can_view", "can_create", "can_update", "can_delete", "can_export", "can_approve"],
+                              "properties": {
+                                "can_view": { "type": "boolean" },
+                                "can_create": { "type": "boolean" },
+                                "can_update": { "type": "boolean" },
+                                "can_delete": { "type": "boolean" },
+                                "can_export": { "type": "boolean" },
+                                "can_approve": { "type": "boolean" }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "example": [
+                    {
+                      "module_id": "module-uuid-1",
+                      "module_permissions": {
+                        "can_view": true,
+                        "can_create": true,
+                        "can_update": true,
+                        "can_delete": false,
+                        "can_export": false,
+                        "can_approve": false
+                      },
+                      "sub_module_permissions": [
+                        {
+                          "sub_module_id": "submod-uuid-1a",
+                          "permissions": {
+                            "can_view": true,
+                            "can_create": true,
+                            "can_update": true,
+                            "can_delete": true,
+                            "can_export": true,
+                            "can_approve": false
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Permissions assigned successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statusCode": { "type": "integer", "example": 200 },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "role_id": { "type": "string", "format": "uuid" },
+                      "role_name": { "type": "string" },
+                      "total_permissions_assigned": { "type": "integer", "description": "Total flattened permissions stored" },
+                      "modules_configured": { "type": "integer", "description": "Number of modules configured" }
+                    }
+                  },
+                  "message": { "type": "string", "example": "Permissions assigned successfully" },
+                  "success": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Invalid permission structure"
+        },
+        "404": {
+          "description": "Role not found"
+        }
+      }
+    }
+  },
+  "/settings/roles/{id}/restore": {
+    "put": {
+      "tags": ["Role Management"],
+      "summary": "Restore deleted role",
+      "description": "Restore a soft-deleted role (within 90 days of deletion)",
+      "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string", "format": "uuid" },
+          "description": "Role ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Role restored successfully"
+        },
+        "400": {
+          "description": "Cannot restore - 90 days passed or role code conflict"
+        },
+        "404": {
+          "description": "Deleted role not found"
+        }
+      }
+    }
+  },
+  "/settings/roles/{id}/permanent-delete": {
+    "delete": {
+      "tags": ["Role Management"],
+      "summary": "Permanently delete role",
+      "description": "Permanently delete a role and all its permissions (irreversible)",
+      "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string", "format": "uuid" },
+          "description": "Role ID"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Role permanently deleted successfully"
+        },
+        "400": {
+          "description": "Cannot permanently delete system role or role with assigned staff"
+        },
+        "404": {
+          "description": "Role not found"
+        }
+      }
+    }
+  },
+  "/settings/roles/{id}/toggle-status": {
+    "put": {
+      "tags": ["Role Management"],
+      "summary": "Activate/Deactivate role",
+      "description": "Toggle role active status",
+      "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string", "format": "uuid" },
+          "description": "Role ID"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["is_active"],
+              "properties": {
+                "is_active": {
+                  "type": "boolean",
+                  "example": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Role status updated successfully"
+        },
+        "404": {
+          "description": "Role not found"
+        }
+      }
+    }
+  },
+  "/settings/roles/{id}/clone": {
+    "post": {
+      "tags": ["Role Management"],
+      "summary": "Clone role",
+      "description": "Create a copy of existing role with optional permissions",
+      "security": [{ "bearerAuth": [] }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string", "format": "uuid" },
+          "description": "Source Role ID"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["new_role_name", "new_role_code"],
+              "properties": {
+                "new_role_name": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 100,
+                  "example": "Junior Class Teacher"
+                },
+                "new_role_code": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 50,
+                  "pattern": "^[A-Z_]+$",
+                  "example": "JUNIOR_CLASS_TEACHER"
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                "copy_permissions": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Whether to copy permissions from source role"
+                }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Role cloned successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statusCode": { "type": "integer", "example": 201 },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string", "format": "uuid" },
+                      "role_name": { "type": "string" },
+                      "role_code": { "type": "string" },
+                      "description": { "type": "string" },
+                      "is_system_role": { "type": "boolean" },
+                      "is_active": { "type": "boolean" },
+                      "cloned_from": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string", "format": "uuid" },
+                          "role_name": { "type": "string" }
+                        }
+                      },
+                      "permissions_copied": { "type": "integer" }
+                    }
+                  },
+                  "message": { "type": "string", "example": "Role cloned successfully with 15 permission(s)" },
+                  "success": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Role code already exists"
+        },
+        "404": {
+          "description": "Source role not found"
+        }
+      }
+    }
+  },
+  "/settings/roles/available-modules": {
+    "get": {
+      "tags": ["Role Management"],
+      "summary": "Get available modules for permission assignment",
+      "description": "Retrieve all subscribed modules and sub-modules for the school",
+      "security": [{ "bearerAuth": [] }],
+      "responses": {
+        "200": {
+          "description": "Available modules retrieved successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statusCode": { "type": "integer", "example": 200 },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "modules": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "module_id": { "type": "string", "format": "uuid" },
+                            "module_name": { "type": "string", "example": "Student Management" },
+                            "module_icon": { "type": "string", "example": "users" },
+                            "is_subscribed": { "type": "boolean", "example": true },
+                            "sub_modules": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "sub_module_id": { "type": "string", "format": "uuid" },
+                                  "sub_module_name": { "type": "string", "example": "Student Registration" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "message": { "type": "string", "example": "Available modules retrieved successfully" },
+                  "success": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

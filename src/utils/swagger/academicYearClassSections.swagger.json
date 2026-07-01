@@ -1,0 +1,689 @@
+{
+  "paths": {
+    "/academic-year/{academicYearId}/sections": {
+      "post": {
+        "tags": ["Academic Year Class Sections"],
+        "summary": "Setup academic year class sections",
+        "description": "Setup sections for classes in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["selected_sections"],
+                "properties": {
+                  "selected_sections": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["class_id", "section_ids"],
+                      "properties": {
+                        "class_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Class master ID"
+                        },
+                        "section_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "description": "Array of section master IDs"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "selected_sections": [
+                  {
+                    "class_id": "649315d1-0ab1-4893-b6c3-6486af27f1ab",
+                    "section_ids": ["section-uuid-1", "section-uuid-2"]
+                  },
+                  {
+                    "class_id": "another-class-uuid",
+                    "section_ids": ["section-uuid-3"]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Class sections setup successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 201
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "academic_year_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "class_master_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "section_master_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Class sections setup successfully for academic year 2025"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid class IDs: invalid-uuid. Only classes selected for this academic year are allowed."
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic year not found"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Academic Year Class Sections"],
+        "summary": "Get academic year class sections",
+        "description": "Retrieve all sections configured for classes in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic year class sections retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "academic_year": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "academic_year_label": {
+                              "type": "string",
+                              "example": "2025"
+                            }
+                          }
+                        },
+                        "sections_by_class": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "class_id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "class_name": {
+                                "type": "string",
+                                "example": "Class 1"
+                              },
+                              "sections": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "section_id": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "section_name": {
+                                      "type": "string",
+                                      "example": "Section A"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "total_sections": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic year class sections retrieved successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Academic Year Class Sections"],
+        "summary": "Update academic year class sections",
+        "description": "Update sections for classes in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["selected_sections"],
+                "properties": {
+                  "selected_sections": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["class_id", "section_ids"],
+                      "properties": {
+                        "class_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Class master ID"
+                        },
+                        "section_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "description": "Array of section master IDs"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Academic year class sections updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "academic_year_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "class_master_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "section_master_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic year class sections updated successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Academic Year Class Sections"],
+        "summary": "Delete academic year class sections",
+        "description": "Delete all sections configured for classes in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic year class sections deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic year class sections deleted successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{academicYearId}/sections/available": {
+      "get": {
+        "tags": ["Academic Year Class Sections"],
+        "summary": "Get available sections for academic year",
+        "description": "Get all available sections for classes selected in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available sections for academic year retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "academic_year": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "academic_year_label": {
+                              "type": "string",
+                              "example": "2025"
+                            }
+                          }
+                        },
+                        "available_sections_by_class": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "class_id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "class_name": {
+                                "type": "string",
+                                "example": "Class 1"
+                              },
+                              "sections": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "section_id": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "section_name": {
+                                      "type": "string",
+                                      "example": "Section A"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "total_available_sections": {
+                          "type": "integer",
+                          "example": 10
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Available sections for academic year retrieved successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{academicYearId}/sections/{sectionId}": {
+      "delete": {
+        "tags": ["Academic Year Class Sections"],
+        "summary": "Delete specific section from academic year",
+        "description": "Remove a specific section from academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Academic year ID"
+          },
+          {
+            "name": "sectionId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Section ID to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "example": 200 },
+                    "data": { "type": "null", "example": null },
+                    "message": { "type": "string", "example": "Section deleted successfully from academic year" },
+                    "success": { "type": "boolean", "example": true }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year or section not found"
+          }
+        }
+      }
+    },
+    "/academic-year/{academicYearId}/sections/class/{classId}": {
+      "get": {
+        "tags": ["Academic Year Class Sections"],
+        "summary": "Get sections for specific class",
+        "description": "Retrieve all sections configured for a specific class in academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Academic year ID"
+          },
+          {
+            "name": "classId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Class ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sections for class retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer", "example": 200 },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AcademicYearClassSection" }
+                    },
+                    "message": { "type": "string", "example": "Sections for class retrieved successfully" },
+                    "success": { "type": "boolean", "example": true }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AcademicYearClassSection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier"
+          },
+          "academic_year_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Academic year ID"
+          },
+          "class_master_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Class master ID"
+          },
+          "section_master_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Section master ID"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "description": "User who created the record"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid",
+            "description": "User who last updated the record"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          },
+          "deleted_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Soft delete timestamp"
+          },
+          "is_deleted": {
+            "type": "boolean",
+            "description": "Soft delete flag"
+          }
+        }
+      },
+      "ClassSectionSetup": {
+        "type": "object",
+        "required": ["selected_sections"],
+        "properties": {
+          "selected_sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["class_id", "section_ids"],
+              "properties": {
+                "class_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "Class master ID"
+                },
+                "section_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "description": "Array of section master IDs for this class"
+                }
+              }
+            },
+            "description": "Array of class-section combinations"
+          }
+        }
+      }
+    }
+  }
+}

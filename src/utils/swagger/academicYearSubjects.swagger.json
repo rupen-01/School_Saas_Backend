@@ -1,0 +1,724 @@
+{
+  "paths": {
+    "/academic-year/{academicYearId}/subjects": {
+      "post": {
+        "tags": ["Academic Year Subjects"],
+        "summary": "Setup academic year subjects",
+        "description": "Setup subjects for classes in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["selected_subjects"],
+                "properties": {
+                  "selected_subjects": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["class_id", "subject_ids"],
+                      "properties": {
+                        "class_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Class master ID"
+                        },
+                        "subject_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "description": "Array of subject master IDs"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "selected_subjects": [
+                  {
+                    "class_id": "649315d1-0ab1-4893-b6c3-6486af27f1ab",
+                    "subject_ids": ["subject-uuid-1", "subject-uuid-2"]
+                  },
+                  {
+                    "class_id": "another-class-uuid",
+                    "subject_ids": ["subject-uuid-3"]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subjects setup successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 201
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "academic_year_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "class_master_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "subject_master_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Subjects setup successfully for academic year 2025"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid class IDs: invalid-uuid. Only classes selected for this academic year are allowed."
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic year not found"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Academic Year Subjects"],
+        "summary": "Get academic year subjects",
+        "description": "Retrieve all subjects configured for classes in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic year subjects retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "academic_year": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "academic_year_label": {
+                              "type": "string",
+                              "example": "2025"
+                            }
+                          }
+                        },
+                        "subjects_by_class": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "class_id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "class_name": {
+                                "type": "string",
+                                "example": "Class 1"
+                              },
+                              "subjects": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "subject_id": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "subject_name": {
+                                      "type": "string",
+                                      "example": "Mathematics"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "total_subjects": {
+                          "type": "integer",
+                          "example": 5
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic year subjects retrieved successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Academic Year Subjects"],
+        "summary": "Update academic year subjects",
+        "description": "Update subjects for classes in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["selected_subjects"],
+                "properties": {
+                  "selected_subjects": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["class_id", "subject_ids"],
+                      "properties": {
+                        "class_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Class master ID"
+                        },
+                        "subject_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "description": "Array of subject master IDs"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Academic year subjects updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "academic_year_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "class_master_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "subject_master_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic year subjects updated successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Academic Year Subjects"],
+        "summary": "Delete academic year subjects",
+        "description": "Delete all subjects configured for classes in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic year subjects deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic year subjects deleted successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{academicYearId}/subjects/available": {
+      "get": {
+        "tags": ["Academic Year Subjects"],
+        "summary": "Get available subjects for academic year",
+        "description": "Get all available subjects for classes selected in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available subjects for academic year retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "academic_year": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "academic_year_label": {
+                              "type": "string",
+                              "example": "2025"
+                            }
+                          }
+                        },
+                        "available_subjects_by_class": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "class_id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "class_name": {
+                                "type": "string",
+                                "example": "Class 1"
+                              },
+                              "subjects": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "subject_id": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "subject_name": {
+                                      "type": "string",
+                                      "example": "Mathematics"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "total_available_subjects": {
+                          "type": "integer",
+                          "example": 10
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Available subjects for academic year retrieved successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{academicYearId}/subjects/{subjectId}": {
+      "delete": {
+        "tags": ["Academic Year Subjects"],
+        "summary": "Delete specific subject from academic year",
+        "description": "Remove a specific subject from academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          },
+          {
+            "name": "subjectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Subject ID to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subject deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Subject deleted successfully from academic year"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year or subject not found"
+          }
+        }
+      }
+    },
+    "/academic-year/{academicYearId}/subjects/class/{classId}": {
+      "get": {
+        "tags": ["Academic Year Subjects"],
+        "summary": "Get subjects for specific class",
+        "description": "Retrieve all subjects configured for a specific class in academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID"
+          },
+          {
+            "name": "classId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Class ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subjects for class retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AcademicYearSubject"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Subjects for class retrieved successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AcademicYearSubject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier"
+          },
+          "academic_year_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Academic year ID"
+          },
+          "class_master_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Class master ID"
+          },
+          "subject_master_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Subject master ID"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "description": "User who created the record"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid",
+            "description": "User who last updated the record"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          },
+          "deleted_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Soft delete timestamp"
+          },
+          "is_deleted": {
+            "type": "boolean",
+            "description": "Soft delete flag"
+          }
+        }
+      },
+      "SubjectSetup": {
+        "type": "object",
+        "required": ["selected_subjects"],
+        "properties": {
+          "selected_subjects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["class_id", "subject_ids"],
+              "properties": {
+                "class_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "Class master ID"
+                },
+                "subject_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "description": "Array of subject master IDs for this class"
+                }
+              }
+            },
+            "description": "Array of class-subject combinations"
+          }
+        }
+      }
+    }
+  }
+}

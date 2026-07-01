@@ -1,0 +1,731 @@
+{
+  "paths": {
+    "/academic-year/{academicYearId}/fee-structure": {
+      "post": {
+        "tags": ["Academic Year Fee Structure"],
+        "summary": "Setup fee structure for academic year",
+        "description": "Configures fee structure for classes in an academic year with installment options",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fee_structure": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "class_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Class master ID"
+                        },
+                        "fees": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "fee_category_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "description": "Fee category master ID"
+                              },
+                              "total_amount": {
+                                "type": "number",
+                                "format": "decimal",
+                                "minimum": 0.01,
+                                "description": "Total fee amount"
+                              },
+                              "due_date": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "Due date for the fee"
+                              },
+                              "installment_type": {
+                                "type": "string",
+                                "enum": ["monthly", "quarterly", "yearly"],
+                                "description": "Installment frequency"
+                              },
+                              "installment_count": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Number of installments"
+                              },
+                              "is_mandatory": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Whether the fee is mandatory"
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "Additional description for the fee"
+                              }
+                            },
+                            "required": ["fee_category_id", "total_amount", "due_date", "installment_type", "installment_count"]
+                          }
+                        }
+                      },
+                      "required": ["class_id", "fees"]
+                    }
+                  }
+                },
+                "required": ["fee_structure"]
+              },
+              "example": {
+                "fee_structure": [
+                  {
+                    "class_id": "649315d1-0ab1-4893-b6c3-6486af27f1ab",
+                    "fees": [
+                      {
+                        "fee_category_id": "tuition-category-id",
+                        "total_amount": 15000.00,
+                        "due_date": "2025-04-01",
+                        "installment_type": "quarterly",
+                        "installment_count": 4,
+                        "is_mandatory": true,
+                        "description": "Annual tuition fee"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Fee structure setup successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AcademicYearFeeStructure" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missingFeeStructure": {
+                    "summary": "Missing fee structure",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "fee_structure array is required",
+                      "success": false
+                    }
+                  },
+                  "invalidClassId": {
+                    "summary": "Invalid class ID",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Invalid class IDs: invalid-id. Only classes selected for this academic year are allowed.",
+                      "success": false
+                    }
+                  },
+                  "invalidAmount": {
+                    "summary": "Invalid amount",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Valid total amount is required for class class-id",
+                      "success": false
+                    }
+                  },
+                  "invalidInstallmentType": {
+                    "summary": "Invalid installment type",
+                    "value": {
+                      "statusCode": 400,
+                      "message": "Valid installment type (monthly, quarterly, yearly) is required for class class-id",
+                      "success": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Academic Year Fee Structure"],
+        "summary": "Get fee structure for academic year",
+        "description": "Retrieves the configured fee structure for an academic year grouped by class",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fee structure retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "academic_year": { "$ref": "#/components/schemas/AcademicYear" },
+                        "fee_structure_by_class": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "class_id": { "type": "string", "format": "uuid" },
+                              "class_name": { "type": "string" },
+                              "class_code": { "type": "string" },
+                              "fees": {
+                                "type": "array",
+                                "items": { "$ref": "#/components/schemas/FeeStructureItem" }
+                              }
+                            }
+                          }
+                        },
+                        "total_fees": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Academic Year Fee Structure"],
+        "summary": "Update fee structure for academic year",
+        "description": "Updates the fee structure for an academic year (replaces existing configuration)",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fee_structure": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "class_id": { "type": "string", "format": "uuid" },
+                        "fees": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "fee_category_id": { "type": "string", "format": "uuid" },
+                              "total_amount": { "type": "number", "format": "decimal" },
+                              "due_date": { "type": "string", "format": "date" },
+                              "installment_type": { "type": "string", "enum": ["monthly", "quarterly", "yearly"] },
+                              "installment_count": { "type": "integer", "minimum": 1 },
+                              "is_mandatory": { "type": "boolean" },
+                              "description": { "type": "string" }
+                            },
+                            "required": ["fee_category_id", "total_amount", "due_date", "installment_type", "installment_count"]
+                          }
+                        }
+                      },
+                      "required": ["class_id", "fees"]
+                    }
+                  }
+                },
+                "required": ["fee_structure"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fee structure updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AcademicYearFeeStructure" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Academic Year Fee Structure"],
+        "summary": "Delete all fee structure for academic year",
+        "description": "Deletes all fee structure configurations for an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fee structure deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": { "type": "null" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{academicYearId}/fee-structure/available": {
+      "get": {
+        "tags": ["Academic Year Fee Structure"],
+        "summary": "Get available fee categories for academic year",
+        "description": "Retrieves all available fee categories that can be assigned to classes in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available fee categories retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "academic_year": { "$ref": "#/components/schemas/AcademicYear" },
+                        "available_fee_categories_by_class": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "class_id": { "type": "string", "format": "uuid" },
+                              "class_name": { "type": "string" },
+                              "class_code": { "type": "string" },
+                              "fee_categories": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "fee_category_id": { "type": "string", "format": "uuid" },
+                                    "category_name": { "type": "string" },
+                                    "category_type": { "type": "string", "enum": ["mandatory", "optional", "one-time", "recurring"] }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "total_available_fee_categories": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No classes selected for academic year",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 400,
+                  "message": "No classes selected for this academic year. Please select classes first.",
+                  "success": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{academicYearId}/fee-structure/{feeStructureId}": {
+      "delete": {
+        "tags": ["Academic Year Fee Structure"],
+        "summary": "Delete specific fee structure",
+        "description": "Deletes a specific fee structure entry from an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          },
+          {
+            "name": "feeStructureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Fee structure ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fee structure deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": { "type": "null" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Fee structure not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "academicYearNotFound": {
+                    "summary": "Academic year not found",
+                    "value": {
+                      "statusCode": 404,
+                      "message": "Academic year not found",
+                      "success": false
+                    }
+                  },
+                  "feeStructureNotFound": {
+                    "summary": "Fee structure not found",
+                    "value": {
+                      "statusCode": 404,
+                      "message": "Fee structure not found for this academic year",
+                      "success": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-year/{academicYearId}/fee-structure/class/{classId}": {
+      "get": {
+        "tags": ["Academic Year Fee Structure"],
+        "summary": "Get fee structure by class",
+        "description": "Retrieves fee structure for a specific class in an academic year",
+        "parameters": [
+          {
+            "name": "academicYearId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Academic year ID (UUID)"
+          },
+          {
+            "name": "classId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Class master ID (UUID)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fee structure for class retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AcademicYearFeeStructure" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Academic year not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Academic Year Fee Structure",
+      "description": "Fee structure configuration and management for academic years"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "AcademicYearFeeStructure": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the fee structure"
+          },
+          "academic_year_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Academic year ID"
+          },
+          "class_master_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Class master ID"
+          },
+          "fee_category_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Fee category master ID"
+          },
+          "total_amount": {
+            "type": "number",
+            "format": "decimal",
+            "description": "Total fee amount"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Due date for the fee"
+          },
+          "installment_type": {
+            "type": "string",
+            "enum": ["monthly", "quarterly", "yearly"],
+            "description": "Installment frequency"
+          },
+          "installment_count": {
+            "type": "integer",
+            "description": "Number of installments"
+          },
+          "is_mandatory": {
+            "type": "boolean",
+            "description": "Whether the fee is mandatory"
+          },
+          "description": {
+            "type": "string",
+            "description": "Additional description for the fee"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the user who created this record"
+          },
+          "updated_by": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the user who last updated this record"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          },
+          "is_deleted": {
+            "type": "boolean",
+            "description": "Whether the record is soft deleted"
+          }
+        }
+      },
+      "FeeStructureItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "fee_category_id": { "type": "string", "format": "uuid" },
+          "category_name": { "type": "string" },
+          "category_type": { "type": "string", "enum": ["mandatory", "optional", "one-time", "recurring"] },
+          "total_amount": { "type": "number", "format": "decimal" },
+          "due_date": { "type": "string", "format": "date" },
+          "installment_type": { "type": "string", "enum": ["monthly", "quarterly", "yearly"] },
+          "installment_count": { "type": "integer" },
+          "is_mandatory": { "type": "boolean" },
+          "description": { "type": "string" }
+        }
+      },
+      "AcademicYear": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "academic_year_label": { "type": "string" },
+          "start_date": { "type": "string", "format": "date" },
+          "end_date": { "type": "string", "format": "date" },
+          "description": { "type": "string" },
+          "status": { "type": "string", "enum": ["draft", "configured", "active"] },
+          "is_active": { "type": "boolean" },
+          "created_by": { "type": "string", "format": "uuid" },
+          "updated_by": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "deleted_at": { "type": "string", "format": "date-time" },
+          "is_deleted": { "type": "boolean" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "statusCode": { "type": "integer" },
+          "message": { "type": "string" },
+          "success": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}
