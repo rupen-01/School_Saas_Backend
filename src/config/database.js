@@ -1,7 +1,10 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 
-dotenv.config({path:`.env.${process.env.NODE_ENV}`})
+dotenv.config();
+if (process.env.NODE_ENV) {
+  dotenv.config({ path: `.env.${process.env.NODE_ENV}`, override: true });
+}
 
 export const sequelize = new Sequelize(
   process.env.DB_NAME,
@@ -15,9 +18,7 @@ export const sequelize = new Sequelize(
       ssl:{
         require:true,
         rejectUnauthorized:false
-      },
-      options:`endpoint=${process.env.DB_ENDPOINT_ID}`,
-      options: "-c search_path=public"
+      }
     }
   }
 )

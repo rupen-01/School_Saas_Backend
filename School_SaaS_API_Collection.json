@@ -1,0 +1,866 @@
+{
+	"info": {
+		"name": "School SaaS API",
+		"description": "Comprehensive collection for School SaaS Backend routes including Super Admin, School Admin, Plans, Modules, Academic Year Setup, and Settings.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Super Admin",
+			"item": [
+				{
+					"name": "Register Super Admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "adminImage", "type": "file", "src": []},
+								{"key": "email", "value": "admin@example.com", "type": "text"},
+								{"key": "fullName", "value": "Super Admin", "type": "text"},
+								{"key": "mobileNumber", "value": "1234567890", "type": "text"},
+								{"key": "password", "value": "password123", "type": "text"},
+								{"key": "role", "value": "super-admin", "type": "text"},
+								{"key": "rolePermission", "value": "all", "type": "text"},
+								{"key": "status", "value": "active", "type": "text"},
+								{"key": "notes", "value": "System Admin", "type": "text"}
+							]
+						},
+						"url": { "raw": "{{baseUrl}}/admin/register", "host": ["{{baseUrl}}"], "path": ["admin", "register"] }
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"super-admin\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/admin/login", "host": ["{{baseUrl}}"], "path": ["admin", "login"] }
+					}
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/admin/current-user", "host": ["{{baseUrl}}"], "path": ["admin", "current-user"] }
+					}
+				},
+				{
+					"name": "Get All Schools",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/admin/schools", "host": ["{{baseUrl}}"], "path": ["admin", "schools"] }
+					}
+				},
+				{
+					"name": "Filter Super Admins",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/admin/filter", "host": ["{{baseUrl}}"], "path": ["admin", "filter"] }
+					}
+				},
+				{
+					"name": "Update Admin Image",
+					"request": {
+						"method": "PATCH",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"body": {
+							"mode": "formdata",
+							"formdata": [ {"key": "adminImage", "type": "file", "src": []} ]
+						},
+						"url": { "raw": "{{baseUrl}}/admin/update-image/{{adminId}}", "host": ["{{baseUrl}}"], "path": ["admin", "update-image", "{{adminId}}"] }
+					}
+				},
+				{
+					"name": "Get Modules",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/admin/modules", "host": ["{{baseUrl}}"], "path": ["admin", "modules"] }
+					}
+				},
+				{
+					"name": "Assign Modules to School",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"schoolId\": \"{{schoolId}}\",\n    \"moduleIds\": [\"module-uuid-1\", \"module-uuid-2\"]\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/admin/assign-modules", "host": ["{{baseUrl}}"], "path": ["admin", "assign-modules"] }
+					}
+				},
+				{
+					"name": "Request Password Reset",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@example.com\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/admin/password/request-token", "host": ["{{baseUrl}}"], "path": ["admin", "password", "request-token"] }
+					}
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"newPassword\": \"newPassword123\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/admin/reset-password/{{resetToken}}", "host": ["{{baseUrl}}"], "path": ["admin", "reset-password", "{{resetToken}}"] }
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "PATCH",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/admin/logout", "host": ["{{baseUrl}}"], "path": ["admin", "logout"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Modules",
+			"item": [
+				{
+					"name": "Create Module",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Student Management\",\n    \"description\": \"Core student features\",\n    \"subModules\": [\n        {\"name\": \"Admission\", \"price\": 100},\n        {\"name\": \"Attendance\", \"price\": 50}\n    ]\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/module", "host": ["{{baseUrl}}"], "path": ["module"] }
+					}
+				},
+				{
+					"name": "Get All Modules",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/module", "host": ["{{baseUrl}}"], "path": ["module"] }
+					}
+				},
+				{
+					"name": "Get Module By ID",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/module/{{moduleId}}", "host": ["{{baseUrl}}"], "path": ["module", "{{moduleId}}"] }
+					}
+				},
+				{
+					"name": "Update Module",
+					"request": {
+						"method": "PATCH",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Module Name\",\n    \"description\": \"Updated description\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/module/{{moduleId}}", "host": ["{{baseUrl}}"], "path": ["module", "{{moduleId}}"] }
+					}
+				},
+				{
+					"name": "Delete Module",
+					"request": {
+						"method": "DELETE",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/module/{{moduleId}}", "host": ["{{baseUrl}}"], "path": ["module", "{{moduleId}}"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Plans",
+			"item": [
+				{
+					"name": "Create Plan",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Premium Plan\",\n    \"code\": \"PREM001\",\n    \"category\": \"Elite\",\n    \"status\": true,\n    \"description\": \"Full access plan\",\n    \"actualPrice\": 10000,\n    \"offerPrice\": 8000,\n    \"billingCycle\": \"yearly\",\n    \"gst\": 18,\n    \"maxStudent\": 1000,\n    \"maxStaffUser\": 100,\n    \"storageLimit\": 50,\n    \"minStudentLimit\": 100,\n    \"maxStudentLimit\": 2000,\n    \"perStudentPrice\": 10,\n    \"creditCarryForward\": true,\n    \"emailNotification\": true,\n    \"smsAlerts\": true,\n    \"whatsappAlerts\": true,\n    \"customeLogoBranding\": true,\n    \"icon\": \"star\",\n    \"iconColor\": \"#FFD700\",\n    \"planPros\": \"Full Support, Priority Access\",\n    \"planCons\": \"Higher Price\",\n    \"duration\": 365,\n    \"termsAndPolicy\": \"Standard Terms\",\n    \"adminNotes\": \"Notes for internal use\",\n    \"modules\": [\n        {\n            \"moduleId\": \"module-uuid\",\n            \"subModules\": [\"submodule-uuid-1\", \"submodule-uuid-2\"]\n        }\n    ]\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/plan", "host": ["{{baseUrl}}"], "path": ["plan"] }
+					}
+				},
+				{
+					"name": "Get All Plans",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/plan?active=true", "host": ["{{baseUrl}}"], "path": ["plan"], "query": [{"key": "active", "value": "true"}] }
+					}
+				},
+				{
+					"name": "Get Plan By ID",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/plan/{{planId}}", "host": ["{{baseUrl}}"], "path": ["plan", "{{planId}}"] }
+					}
+				},
+				{
+					"name": "Update Plan",
+					"request": {
+						"method": "PATCH",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Plan Name\",\n    \"actualPrice\": 12000\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/plan/{{planId}}", "host": ["{{baseUrl}}"], "path": ["plan", "{{planId}}"] }
+					}
+				},
+				{
+					"name": "Soft Delete Plan",
+					"request": {
+						"method": "DELETE",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/plan/{{planId}}", "host": ["{{baseUrl}}"], "path": ["plan", "{{planId}}"] }
+					}
+				},
+				{
+					"name": "Restore Plan",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/plan/{{planId}}/restore", "host": ["{{baseUrl}}"], "path": ["plan", "{{planId}}", "restore"] }
+					}
+				},
+				{
+					"name": "Hard Delete Plan",
+					"request": {
+						"method": "DELETE",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/plan/{{planId}}/hard-delete", "host": ["{{baseUrl}}"], "path": ["plan", "{{planId}}", "hard-delete"] }
+					}
+				},
+				{
+					"name": "Remove Module From Plan",
+					"request": {
+						"method": "DELETE",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/plan/{{planId}}/module/{{moduleId}}", "host": ["{{baseUrl}}"], "path": ["plan", "{{planId}}", "module", "{{moduleId}}"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "School",
+			"item": [
+				{
+					"name": "Create School",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "schoolImage", "type": "file", "src": []},
+								{"key": "slug", "value": "test-school", "type": "text"},
+								{"key": "institutionName", "value": "Test Academy", "type": "text"},
+								{"key": "institutionType", "value": "K-12", "type": "text"},
+								{"key": "board", "value": "[\"CBSE\", \"ICSE\"]", "type": "text"},
+								{"key": "establishmentYear", "value": "2010", "type": "text"},
+								{"key": "medium", "value": "English", "type": "text"},
+								{"key": "totalStudent", "value": "500", "type": "text"},
+								{"key": "contactPersonName", "value": "John Doe", "type": "text"},
+								{"key": "contactNumber", "value": "9876543210", "type": "text"},
+								{"key": "alternateNumber", "value": "9876543211", "type": "text"},
+								{"key": "addressLine1", "value": "123 Street", "type": "text"},
+								{"key": "addressLine2", "value": "Apt 4B", "type": "text"},
+								{"key": "email", "value": "school@test.com", "type": "text"},
+								{"key": "city", "value": "New York", "type": "text"},
+								{"key": "state", "value": "NY", "type": "text"},
+								{"key": "pincode", "value": "10001", "type": "text"},
+								{"key": "country", "value": "USA", "type": "text"},
+								{"key": "plan", "value": "{{planId}}", "type": "text"},
+								{"key": "smsSenderId", "value": "SCHLNY", "type": "text"},
+								{"key": "whatsappNumber", "value": "9876543210", "type": "text"},
+								{"key": "adminName", "value": "Admin User", "type": "text"},
+								{"key": "adminEmail", "value": "admin@test-school.com", "type": "text"},
+								{"key": "adminMobileNumber", "value": "9876543210", "type": "text"},
+								{"key": "notes", "value": "New school setup", "type": "text"},
+								{"key": "password", "value": "password123", "type": "text"}
+							]
+						},
+						"url": { "raw": "{{baseUrl}}/school", "host": ["{{baseUrl}}"], "path": ["school"] }
+					}
+				},
+				{
+					"name": "School Admin Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@test-school.com\",\n    \"password\": \"password123\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/school/admin/login", "host": ["{{baseUrl}}"], "path": ["school", "admin", "login"] }
+					}
+				},
+				{
+					"name": "Get School By ID",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/school/{{schoolId}}", "host": ["{{baseUrl}}"], "path": ["school", "{{schoolId}}"] }
+					}
+				},
+				{
+					"name": "Get All Schools",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/school", "host": ["{{baseUrl}}"], "path": ["school"] }
+					}
+				},
+				{
+					"name": "Update School",
+					"request": {
+						"method": "PATCH",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"institutionName\": \"Updated Academy Name\",\n    \"totalStudent\": 600\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/school/{{schoolId}}", "host": ["{{baseUrl}}"], "path": ["school", "{{schoolId}}"] }
+					}
+				},
+				{
+					"name": "Update School Image",
+					"request": {
+						"method": "PATCH",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"body": {
+							"mode": "formdata",
+							"formdata": [ {"key": "schoolImage", "type": "file", "src": []} ]
+						},
+						"url": { "raw": "{{baseUrl}}/school/image/{{schoolId}}", "host": ["{{baseUrl}}"], "path": ["school", "image", "{{schoolId}}"] }
+					}
+				},
+				{
+					"name": "Delete School",
+					"request": {
+						"method": "DELETE",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/school/{{schoolId}}", "host": ["{{baseUrl}}"], "path": ["school", "{{schoolId}}"] }
+					}
+				},
+				{
+					"name": "Request Admin Password Reset",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@test-school.com\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/school/admin/password/request-token", "host": ["{{baseUrl}}"], "path": ["school", "admin", "password", "request-token"] }
+					}
+				},
+				{
+					"name": "Admin Logout",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/school/admin/logout", "host": ["{{baseUrl}}"], "path": ["school", "admin", "logout"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Academic Year",
+			"item": [
+				{
+					"name": "Create Academic Year",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"academic_year_label\": \"2024-2025\",\n    \"start_date\": \"2024-04-01\",\n    \"end_date\": \"2025-03-31\",\n    \"status\": \"draft\",\n    \"description\": \"Main academic year\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/academic-year", "host": ["{{baseUrl}}"], "path": ["academic-year"] }
+					}
+				},
+				{
+					"name": "Get All Academic Years",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/academic-year", "host": ["{{baseUrl}}"], "path": ["academic-year"] }
+					}
+				},
+				{
+					"name": "Get Active Academic Year",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/academic-year/active", "host": ["{{baseUrl}}"], "path": ["academic-year", "active"] }
+					}
+				},
+				{
+					"name": "Get Academic Year By ID",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}"] }
+					}
+				},
+				{
+					"name": "Update Academic Year",
+					"request": {
+						"method": "PUT",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"academic_year_label\": \"2024-2025 Updated\",\n    \"status\": \"active\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}"] }
+					}
+				},
+				{
+					"name": "Activate Academic Year",
+					"request": {
+						"method": "PUT",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/activate", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "activate"] }
+					}
+				},
+				{
+					"name": "Soft Delete Academic Year",
+					"request": {
+						"method": "DELETE",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}"] }
+					}
+				},
+				{
+					"name": "Restore Academic Year",
+					"request": {
+						"method": "PUT",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/restore", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "restore"] }
+					}
+				},
+				{
+					"name": "Permanent Delete Academic Year",
+					"request": {
+						"method": "DELETE",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+						"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/permanent-delete", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "permanent-delete"] }
+					}
+				},
+				{
+					"name": "Classes",
+					"item": [
+						{
+							"name": "Setup Classes",
+							"request": {
+								"method": "POST",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"selected_classes\": [\n        {\"class_id\": \"{{classId1}}\"},\n        {\"class_id\": \"{{classId2}}\"}\n    ]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/classes", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "classes"] }
+							}
+						},
+						{
+							"name": "Get Classes for Academic Year",
+							"request": {
+								"method": "GET",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/classes", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "classes"] }
+							}
+						},
+						{
+							"name": "Get Available Classes",
+							"request": {
+								"method": "GET",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/classes/available", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "classes", "available"] }
+							}
+						},
+						{
+							"name": "Update Classes",
+							"request": {
+								"method": "PUT",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"selected_classes\": [\n        {\"class_id\": \"{{classId1}}\"}\n    ]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/classes", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "classes"] }
+							}
+						},
+						{
+							"name": "Remove Specific Class",
+							"request": {
+								"method": "DELETE",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/classes/{{classId}}", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "classes", "{{classId}}"] }
+							}
+						},
+						{
+							"name": "Remove All Classes",
+							"request": {
+								"method": "DELETE",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/classes", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "classes"] }
+							}
+						}
+					]
+				},
+				{
+					"name": "Sections",
+					"item": [
+						{
+							"name": "Setup Sections",
+							"request": {
+								"method": "POST",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"selected_sections\": [\n        {\n            \"class_id\": \"{{classId}}\",\n            \"section_id\": \"{{sectionId}}\",\n            \"capacity\": 40\n        }\n    ]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/sections", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "sections"] }
+							}
+						},
+						{
+							"name": "Get All Sections for Academic Year",
+							"request": {
+								"method": "GET",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/sections", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "sections"] }
+							}
+						},
+						{
+							"name": "Get Sections By Class",
+							"request": {
+								"method": "GET",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/sections/class/{{classId}}", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "sections", "class", "{{classId}}"] }
+							}
+						}
+					]
+				},
+				{
+					"name": "Subjects",
+					"item": [
+						{
+							"name": "Setup Subjects",
+							"request": {
+								"method": "POST",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"selected_subjects\": [\n        {\n            \"class_id\": \"{{classId}}\",\n            \"subject_id\": \"{{subjectId}}\",\n            \"is_elective\": false\n        }\n    ]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/subjects", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "subjects"] }
+							}
+						},
+						{
+							"name": "Get All Subjects for Academic Year",
+							"request": {
+								"method": "GET",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/subjects", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "subjects"] }
+							}
+						}
+					]
+				},
+				{
+					"name": "Fee Structure",
+					"item": [
+						{
+							"name": "Setup Fee Structure",
+							"request": {
+								"method": "POST",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"selected_fees\": [\n        {\n            \"class_id\": \"{{classId}}\",\n            \"fee_category_id\": \"{{feeCategoryId}}\",\n            \"amount\": 5000,\n            \"due_date\": \"2024-05-10\"\n        }\n    ]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/fee-structure", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "fee-structure"] }
+							}
+						},
+						{
+							"name": "Get Fee Structure for Academic Year",
+							"request": {
+								"method": "GET",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/academic-year/{{academicYearId}}/fee-structure", "host": ["{{baseUrl}}"], "path": ["academic-year", "{{academicYearId}}", "fee-structure"] }
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Settings",
+			"item": [
+				{
+					"name": "Master Data",
+					"item": [
+						{
+							"name": "Classes",
+							"item": [
+								{
+									"name": "Create Class Master",
+									"request": {
+										"method": "POST",
+										"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"class_name\": \"Class 10\",\n    \"class_code\": \"C10\",\n    \"display_order\": 1,\n    \"description\": \"Tenth Grade\"\n}",
+											"options": { "raw": { "language": "json" } }
+										},
+										"url": { "raw": "{{baseUrl}}/settings/masterdata/classes", "host": ["{{baseUrl}}"], "path": ["settings", "masterdata", "classes"] }
+									}
+								},
+								{
+									"name": "Get All Class Masters",
+									"request": {
+										"method": "GET",
+										"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+										"url": { "raw": "{{baseUrl}}/settings/masterdata/classes?include_deleted=false&is_active=true", "host": ["{{baseUrl}}"], "path": ["settings", "masterdata", "classes"], "query": [{"key": "include_deleted", "value": "false"}, {"key": "is_active", "value": "true"}] }
+									}
+								},
+								{
+									"name": "Get Class Master By ID",
+									"request": {
+										"method": "GET",
+										"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+										"url": { "raw": "{{baseUrl}}/settings/masterdata/classes/{{classId}}", "host": ["{{baseUrl}}"], "path": ["settings", "masterdata", "classes", "{{classId}}"] }
+									}
+								},
+								{
+									"name": "Update Class Master",
+									"request": {
+										"method": "PUT",
+										"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"class_name\": \"Class 10 Updated\",\n    \"display_order\": 2\n}",
+											"options": { "raw": { "language": "json" } }
+										},
+										"url": { "raw": "{{baseUrl}}/settings/masterdata/classes/{{classId}}", "host": ["{{baseUrl}}"], "path": ["settings", "masterdata", "classes", "{{classId}}"] }
+									}
+								},
+								{
+									"name": "Delete Class Master",
+									"request": {
+										"method": "DELETE",
+										"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+										"url": { "raw": "{{baseUrl}}/settings/masterdata/classes/{{classId}}", "host": ["{{baseUrl}}"], "path": ["settings", "masterdata", "classes", "{{classId}}"] }
+									}
+								},
+								{
+									"name": "Restore Class Master",
+									"request": {
+										"method": "PUT",
+										"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+										"url": { "raw": "{{baseUrl}}/settings/masterdata/classes/{{classId}}/restore", "host": ["{{baseUrl}}"], "path": ["settings", "masterdata", "classes", "{{classId}}", "restore"] }
+									}
+								}
+							]
+						},
+						{
+							"name": "Sections",
+							"item": [
+								{
+									"name": "Create Section Master",
+									"request": {
+										"method": "POST",
+										"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"section_name\": \"Section A\",\n    \"section_code\": \"SA\",\n    \"display_order\": 1\n}",
+											"options": { "raw": { "language": "json" } }
+										},
+										"url": { "raw": "{{baseUrl}}/settings/masterdata/sections", "host": ["{{baseUrl}}"], "path": ["settings", "masterdata", "sections"] }
+									}
+								},
+								{
+									"name": "Get All Section Masters",
+									"request": {
+										"method": "GET",
+										"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+										"url": { "raw": "{{baseUrl}}/settings/masterdata/sections", "host": ["{{baseUrl}}"], "path": ["settings", "masterdata", "sections"] }
+									}
+								}
+							]
+						},
+						{
+							"name": "Subjects",
+							"item": [
+								{
+									"name": "Create Subject Master",
+									"request": {
+										"method": "POST",
+										"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"subject_name\": \"Mathematics\",\n    \"subject_code\": \"MATH\",\n    \"is_practical\": true\n}",
+											"options": { "raw": { "language": "json" } }
+										},
+										"url": { "raw": "{{baseUrl}}/settings/masterdata/subjects", "host": ["{{baseUrl}}"], "path": ["settings", "masterdata", "subjects"] }
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Role Management",
+					"item": [
+						{
+							"name": "Get Available Modules",
+							"request": {
+								"method": "GET",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/settings/roles/available-modules", "host": ["{{baseUrl}}"], "path": ["settings", "roles", "available-modules"] }
+							}
+						},
+						{
+							"name": "Create Role",
+							"request": {
+								"method": "POST",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"role_name\": \"Class Teacher\",\n    \"role_code\": \"CLASS_TEACHER\",\n    \"description\": \"Teacher in charge of a class\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": { "raw": "{{baseUrl}}/settings/roles", "host": ["{{baseUrl}}"], "path": ["settings", "roles"] }
+							}
+						},
+						{
+							"name": "Get All Roles",
+							"request": {
+								"method": "GET",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/settings/roles?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["settings", "roles"], "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}] }
+							}
+						},
+						{
+							"name": "Get Role By ID",
+							"request": {
+								"method": "GET",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/settings/roles/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["settings", "roles", "{{roleId}}"] }
+							}
+						},
+						{
+							"name": "Assign Permissions",
+							"request": {
+								"method": "PUT",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"permissions\": [\n        {\n            \"module_id\": \"{{moduleId}}\",\n            \"module_permissions\": {\n                \"can_view\": true,\n                \"can_create\": true,\n                \"can_update\": true,\n                \"can_delete\": false,\n                \"can_export\": true,\n                \"can_approve\": false\n            },\n            \"sub_module_permissions\": [\n                {\n                    \"sub_module_id\": \"{{subModuleId}}\",\n                    \"permissions\": {\n                        \"can_view\": true,\n                        \"can_create\": true,\n                        \"can_update\": true,\n                        \"can_delete\": false,\n                        \"can_export\": true,\n                        \"can_approve\": false\n                    }\n                }\n            ]\n        }\n    ]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": { "raw": "{{baseUrl}}/settings/roles/{{roleId}}/permissions", "host": ["{{baseUrl}}"], "path": ["settings", "roles", "{{roleId}}", "permissions"] }
+							}
+						},
+						{
+							"name": "Toggle Role Status",
+							"request": {
+								"method": "PUT",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"is_active\": false\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": { "raw": "{{baseUrl}}/settings/roles/{{roleId}}/toggle-status", "host": ["{{baseUrl}}"], "path": ["settings", "roles", "{{roleId}}", "toggle-status"] }
+							}
+						},
+						{
+							"name": "Clone Role",
+							"request": {
+								"method": "POST",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"new_role_name\": \"Assistant Class Teacher\",\n    \"new_role_code\": \"ASST_CLASS_TEACHER\",\n    \"copy_permissions\": true\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": { "raw": "{{baseUrl}}/settings/roles/{{roleId}}/clone", "host": ["{{baseUrl}}"], "path": ["settings", "roles", "{{roleId}}", "clone"] }
+							}
+						}
+					]
+				},
+				{
+					"name": "Staff Settings",
+					"item": [
+						{
+							"name": "Get Settings Overview",
+							"request": {
+								"method": "GET",
+								"header": [ { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" } ],
+								"url": { "raw": "{{baseUrl}}/settings/staff/overview", "host": ["{{baseUrl}}"], "path": ["settings", "staff", "overview"] }
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{ "key": "baseUrl", "value": "http://localhost:5000", "type": "string" },
+		{ "key": "token", "value": "your-jwt-token", "type": "string" },
+		{ "key": "schoolId", "value": "school-uuid", "type": "string" },
+		{ "key": "adminId", "value": "admin-uuid", "type": "string" },
+		{ "key": "moduleId", "value": "module-uuid", "type": "string" },
+		{ "key": "subModuleId", "value": "submodule-uuid", "type": "string" },
+		{ "key": "planId", "value": "plan-uuid", "type": "string" },
+		{ "key": "academicYearId", "value": "academic-year-uuid", "type": "string" },
+		{ "key": "classId", "value": "class-uuid", "type": "string" },
+		{ "key": "sectionId", "value": "section-uuid", "type": "string" },
+		{ "key": "subjectId", "value": "subject-uuid", "type": "string" },
+		{ "key": "feeCategoryId", "value": "fee-category-uuid", "type": "string" },
+		{ "key": "roleId", "value": "role-uuid", "type": "string" },
+		{ "key": "resetToken", "value": "reset-token-value", "type": "string" },
+		{ "key": "classId1", "value": "uuid-1", "type": "string" },
+		{ "key": "classId2", "value": "uuid-2", "type": "string" }
+	]
+}

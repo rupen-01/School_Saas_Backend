@@ -1,5 +1,8 @@
 import dotenv from "dotenv";
-dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
+dotenv.config(); // Load default .env
+if (process.env.NODE_ENV) {
+  dotenv.config({ path: `.env.${process.env.NODE_ENV}`, override: true });
+}
 import path from "path"
 
 import { sequelize } from "./src/config/database.js";

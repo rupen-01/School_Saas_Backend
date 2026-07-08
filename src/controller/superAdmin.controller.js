@@ -21,98 +21,89 @@ const generateToken = async(req,userId) =>{
            await user.save()
            return {accessToken,refreshToken}
     } catch (error) {
-        gen(`error pehchan and uska soulution de sirf 20 to 25 words m : ${error.message}`);
+        try {
+            gen(`error pehchan and uska soulution de sirf 20 to 25 words m : ${error.message}`);
+        } catch (aiError) {
+            console.error("GenAI Error:", aiError.message);
+        }
         throw new ApiError(500,error.message)
     }
 
 }
 
-const createSuperAdmin = asynchandler(async(req,res)=>{
+const createSuperAdmin = asynchandler(async (req, res) => {
+    const sequelize = req.app.locals.sequelize;
+    const { email, fullName, mobileNumber, password, role, rolePermission, status, notes } = req.body;
+    const { SuperAdmin, User } = req.app.locals.models;
+
+    // 1. Validation logic fix: don't use .trim() on non-string fields
+    const requiredFields = ["email", "fullName", "password", "role"];
+    const missingFields = requiredFields.filter(field => !req.body[field] || (typeof req.body[field] === 'string' && !req.body[field].trim()));
+
+    if (missingFields.length > 0) {
+        throw new ApiError(400, `Missing required fields: ${missingFields.join(", ")}`);
+    }
+
+    // 2. Check existence before starting transaction
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+        throw new ApiError(409, "User already exists with this email");
+    }
+
+    const adminImageLocalImage = req.files?.adminImage?.[0]?.path;
+    let adminImageUrl = "";
+    if (adminImageLocalImage) {
+        adminImageUrl = `${req.protocol}://${req.get('host')}/uploads/admin/${path.basename(adminImageLocalImage)}`;
+    }
+
+    // 3. Use Transaction for atomic operations
+    const t = await sequelize.transaction();
+
     try {
-
-        const {email,fullName,mobileNumber,password,role,rolePermission,status,notes} = req.body
-        console.log(req.body);
-        const allowedFields = ["email","fullName","mobileNumber","password","role","rolePermission","status","notes"]
-
-        const missingFields = allowedFields.filter(fields => !req.body[fields]?.trim())
-        if (missingFields.length > 0) {
-            throw new ApiError(400, `Missing required fields: ${missingFields.join(", ")}`);
-        }
-
-        const adminImageLocalImage = req.files?.adminImage?.[0]?.path;
-        let adminImageUrl = ""
-        if(adminImageLocalImage)
-        {
-            adminImageUrl = `${req.protocol}://${req.get('host')}/uploads/admin/${path.basename(adminImageLocalImage)}`
-            console.log(adminImageUrl);
-        }
-
-        const {SuperAdmin,User} = req.app.locals.models
-
-        const existingUser = await User.findOne({where:{email}})
-        if(existingUser)
-        {
-            throw new ApiError(404,"User already exist with this email")
-        }
-
         const user = await User.create({
             email,
             password,
             role
-        })
-        
-        if(!user)
-        {
-            throw new ApiError(500,"Something went wrong while creating user")
-        }
-            
-        const existingAdmin = await SuperAdmin.findOne({where:{email}})
-        if(existingAdmin){
-            throw new ApiError(400,"Admin already exist with this email")
-        }
-            
+        }, {
+            transaction: t,
+            skipPasswordHistory: true // Explicitly skip history for new registration
+        });
+
         const admin = await SuperAdmin.create({
             email,
             fullName,
             mobileNumber,
             role,
             rolePermission,
-            status,
+            status: status === "active" || status === true || status === "true",
             notes,
-            adminImage:adminImageUrl
-        })
+            adminImage: adminImageUrl
+        }, { transaction: t });
 
-        if(!admin)
-        {
-            throw new ApiError(500,"Something went wrong while creating admin")
-        }
+        await t.commit();
 
         return res
-        .status(201)
-        .json(new ApiResponse(201,{user,admin},"Admin created successfully"))
+            .status(201)
+            .json(new ApiResponse(201, { user, admin }, "Admin created successfully"));
 
     } catch (error) {
-        gen(`error pehchan and uska soulution de sirf 20 to 25 words m : ${error.message}`);
-        const {SuperAdmin,User} = req.app.locals.models
-        await User.destroy({where:{email:req.body.email}})
-        await SuperAdmin.destroy({where:{email:req.body.email}})
-        if(req.files?.adminImage?.[0]?.path) {
-          const oldImageName = path.basename(req.files?.adminImage[0]?.path);
-          const oldImagePath = path.join("public", "uploads", "admin", oldImageName);
-          if (fs.existsSync(oldImagePath)) {
+        await t.rollback();
+
+        // Non-blocking AI error analysis
+        gen(`error pehchan and uska soulution de sirf 20 to 25 words m : ${error.message}`).catch(() => {});
+
+        // Cleanup uploaded file on failure
+        if (adminImageLocalImage && fs.existsSync(adminImageLocalImage)) {
             try {
-              fs.unlinkSync(oldImagePath);
+                fs.unlinkSync(adminImageLocalImage);
             } catch (err) {
-              console.error("Failed to delete old image:", err.message);
+                console.error("Failed to delete uploaded image on error:", err.message);
             }
-          }
         }
-        throw new ApiError(500,error)
 
-
+        throw new ApiError(500, error.message || "Internal Server Error");
     }
-
-})
+});
 
 const login = asynchandler(async(req,res)=>{
     const {email,password,role} = req.body
@@ -422,9 +413,9 @@ const findAllModule = asynchandler(async(req,res)=>{
     const {Module} = req.app.locals.models;
 
     const modules = await Module.findAll()
-    if(modules.length > 0 || !modules)
+    if(!modules || modules.length === 0)
     {
-        throw new ApiError(404,"Module not found")
+        throw new ApiError(404,"Modules not found")
     }
 
     return res

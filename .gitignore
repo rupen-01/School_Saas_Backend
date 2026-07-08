@@ -1,1 +1,23 @@
-node_modules
+# Dependency directories
+node_modules/
+# Environment files (Sensitive Info)
+.env
+.env.local
+.env.*
+# IDE / Editor folders
+.idea/
+.vscode/
+*.swp
+*.swo
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs
+*.log
+# OS files
+.DS_Store
+Thumbs.db
+# Garbage files (detected in your root)
+t.table_name))
+s.schema_name))

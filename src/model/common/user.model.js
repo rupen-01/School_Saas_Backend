@@ -21,16 +21,17 @@ export default (sequelize,schema) => {
             tableName:"users",
             timestamps:true,
             hooks:{
-                beforeSave:async(user)=>{
+                beforeSave:async(user, options)=>{
                     if(user.changed("password")){
                         try {
                             // Only check password history on updates, not on initial creation
-                            if (!user.isNewRecord) {
+                            if (!user.isNewRecord && !options.skipPasswordHistory) {
                                 const RestorePassword = sequelize.models.RestorePassword;
                                 if (RestorePassword && user.id) {
                                     const history = await RestorePassword.findAll({
                                         where: { userId: user.id },
-                                        attributes: ['password']
+                                        attributes: ['password'],
+                                        transaction: options.transaction
                                     });
                                     for (const h of history) {
                                         const isSame = await bcrypt.compare(user.password, h.password);
@@ -49,8 +50,11 @@ export default (sequelize,schema) => {
                         user.setDataValue('_passwordChanged', true);
                     }
                 },
-                afterSave: async (user)=>{
-                    if (user.getDataValue('_passwordChanged')) {
+                afterSave: async (user, options)=>{
+                    const isPasswordChanged = user.getDataValue('_passwordChanged');
+                    const shouldSkipHistory = options.skipPasswordHistory || user.isNewRecord || options._isNewUser;
+
+                    if (isPasswordChanged && !shouldSkipHistory) {
                         const RestorePassword = sequelize.models.RestorePassword;
                         if (RestorePassword) {
                             // Ensure the restore_passwords table exists before attempting writes
@@ -66,16 +70,20 @@ export default (sequelize,schema) => {
                                 await RestorePassword.create({
                                     userId: user.id,
                                     password: user.password
-                                });
+                                }, { transaction: options.transaction });
                                 // Keep only the most recent 5 password records
                                 const histories = await RestorePassword.findAll({
                                     where: { userId: user.id },
-                                    order: [["createdAt", "DESC"]]
+                                    order: [["createdAt", "DESC"]],
+                                    transaction: options.transaction
                                 });
                                 if (histories.length > 5) {
                                     const toDelete = histories.slice(5); // older ones
                                     const ids = toDelete.map(h => h.id);
-                                    await RestorePassword.destroy({ where: { id: ids } });
+                                    await RestorePassword.destroy({
+                                        where: { id: ids },
+                                        transaction: options.transaction
+                                    });
                                 }
                             }
                         }
